@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Préstamos</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1E3A5F">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #FAFAFA;
+      color: #1A1A1A;
+    }
+    .container { max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; }
+
+    header {
+      background: #1E3A5F;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    header h1 { font-size: 1.5rem; }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #E5E7EB;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .tab {
+      flex: 1;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      color: #6B7280;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      border-bottom-color: #C9A961;
+      color: #1E3A5F;
+    }
+
+    .content { padding: 1.5rem; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Form */
+    .form-group { margin-bottom: 1.5rem; }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #1A1A1A;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #C9A961;
+      box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #1E3A5F;
+      color: white;
+    }
+    .btn-primary:hover { background: #0f2239; }
+    .btn-primary:active { opacity: 0.9; }
+
+    .btn-accent {
+      background: #C9A961;
+      color: #1A1A1A;
+    }
+    .btn-accent:hover { background: #b8965c; }
+
+    /* List */
+    .loan-card {
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .loan-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .loan-card.active {
+      background: #FAFAFA;
+      border-color: #C9A961;
+    }
+
+    .loan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+    }
+    .loan-name { font-weight: 600; color: #1A1A1A; }
+    .loan-phone { font-size: 0.875rem; color: #6B7280; }
+
+    .loan-amounts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #E5E7EB;
+    }
+    .amount-box {
+      text-align: center;
+    }
+    .amount-label { font-size: 0.75rem; color: #6B7280; text-transform: uppercase; }
+    .amount-value { font-size: 1.25rem; font-weight: 700; color: #1E3A5F; }
+    .amount-value.accent { color: #C9A961; }
+
+    /* Detail view */
+    .detail-header {
+      background: #FAFAFA;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .detail-label { color: #6B7280; font-size: 0.875rem; }
+    .detail-value { font-weight: 600; color: #1A1A1A; }
+
+    .history {
+      margin-bottom: 1.5rem;
+    }
+    .history h3 {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      color: #6B7280;
+      margin-bottom: 0.75rem;
+    }
+    .payment-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: #FAFAFA;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .payment-date { color: #6B7280; }
+    .payment-amount { font-weight: 600; color: #2D6A4F; }
+
+    .new-payment {
+      border: 2px dashed #E5E7EB;
+      padding: 1rem;
+      border-radius: 6px;
+      background: #FAFAFA;
+    }
+    .new-payment h3 {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      color: #6B7280;
+      margin-bottom: 1rem;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    .alert-success {
+      background: #e8f5e9;
+      color: #2D6A4F;
+      border: 1px solid #c8e6c9;
+    }
+    .alert-error {
+      background: #ffebee;
+      color: #8B1E1E;
+      border: 1px solid #ffcdd2;
+    }
+
+    .days-badge {
+      display: inline-block;
+      background: #E5E7EB;
+      color: #6B7280;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      background: #E5E7EB;
+      color: #1A1A1A;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+    }
+    .back-btn:hover { background: #d1d5db; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #6B7280;
+    }
+    .empty-state p { font-size: 0.875rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container" x-data="app()" @load="init()">
+    <header>
+      <h1>💰 Préstamos</h1>
+    </header>
+
+    <div class="tabs">
+      <div class="tab" :class="{ active: screen === 'new' }" @click="screen = 'new'">Nuevo</div>
+      <div class="tab" :class="{ active: screen === 'active' }" @click="screen = 'active'; loadLoans()">Activos</div>
+    </div>
+
+    <div class="content">
+      <!-- SCREEN 1: Nuevo Préstamo -->
+      <div class="screen" :class="{ active: screen === 'new' }">
+        <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Nuevo Préstamo</h2>
+
+        <div x-show="message" :class="['alert', message.type === 'success' ? 'alert-success' : 'alert-error']" x-text="message.text"></div>
+
+        <form @submit.prevent="submitLoan()">
+          <div class="form-group">
+            <label>Nombre del deudor</label>
+            <input type="text" x-model="form.nombre" placeholder="Ej: Juan Pérez" required>
+          </div>
+
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" x-model="form.telefono" placeholder="Ej: 3012345678" required>
+          </div>
+
+          <div class="form-group">
+            <label>Monto total (capital + intereses)</label>
+            <input type="number" x-model.number="form.monto_total" placeholder="Ej: 500000" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha del préstamo</label>
+            <input type="date" x-model="form.fecha_prestamo" required>
+          </div>
+
+          <button type="submit" class="btn-primary" :disabled="loading">
+            <span x-show="!loading">Registrar Préstamo</span>
+            <span x-show="loading">Guardando...</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- SCREEN 2: Préstamos Activos -->
+      <div class="screen" :class="{ active: screen === 'active' }">
+        <div x-show="!selectedLoan">
+          <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Préstamos Activos</h2>
+
+          <div x-show="loans.length === 0" class="empty-state">
+            <p>No hay préstamos activos.</p>
+          </div>
+
+          <template x-for="loan in loans" :key="loan.prestamo_id">
+            <div class="loan-card" :class="{ active: selectedLoan?.prestamo_id === loan.prestamo_id }" @click="selectedLoan = loan; loadPayments(loan.prestamo_id)">
+              <div class="loan-header">
+                <div>
+                  <div class="loan-name" x-text="loan.deudor_nombre"></div>
+                  <div class="loan-phone" x-text="loan.deudor_telefono"></div>
+                </div>
+                <div class="days-badge" x-text="getDays(loan.fecha_prestamo) + ' días'"></div>
+              </div>
+              <div class="loan-amounts">
+                <div class="amount-box">
+                  <div class="amount-label">Total</div>
+                  <div class="amount-value" x-text="formatCurrency(loan.monto_total)"></div>
+                </div>
+                <div class="amount-box">
+                  <div class="amount-label">Saldo</div>
+                  <div class="amount-value accent" x-text="formatCurrency(loan.saldo_actual)"></div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Detail view -->
+        <div x-show="selectedLoan">
+          <button class="back-btn" @click="selectedLoan = null; payments = []">← Atrás</button>
+
+          <h2 style="margin-bottom: 1rem; color: #1E3A5F;" x-text="selectedLoan?.deudor_nombre"></h2>
+
+          <div class="detail-header">
+            <div class="detail-row">
+              <span class="detail-label">Monto total</span>
+              <span class="detail-value" x-text="formatCurrency(selectedLoan?.monto_total)"></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Saldo pendiente</span>
+              <span class="detail-value" style="color: #C9A961;" x-text="formatCurrency(selectedLoan?.saldo_actual)"></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Fecha préstamo</span>
+              <span class="detail-value" x-text="formatDate(selectedLoan?.fecha_prestamo)"></span>
+            </div>
+          </div>
+
+          <div class="history">
+            <h3>Historial de abonos</h3>
+            <div x-show="payments.length === 0" style="color: #6B7280; font-size: 0.875rem;">Sin abonos aún</div>
+            <template x-for="pago in payments" :key="pago.id">
+              <div class="payment-item">
+                <span class="payment-date" x-text="formatDate(pago.fecha)"></span>
+                <span class="payment-amount" x-text="formatCurrency(pago.monto)"></span>
+              </div>
+            </template>
+          </div>
+
+          <div class="new-payment">
+            <h3>Registrar nuevo abono</h3>
+            <div x-show="paymentMessage" :class="['alert', paymentMessage.type === 'success' ? 'alert-success' : 'alert-error']" x-text="paymentMessage.text"></div>
+            <form @submit.prevent="submitPayment()">
+              <div class="form-group">
+                <label>Monto del abono</label>
+                <input type="number" x-model.number="newPayment.monto" placeholder="Ej: 50000" min="0" required>
+              </div>
+              <div class="form-group">
+                <label>Fecha del abono</label>
+                <input type="date" x-model="newPayment.fecha" :value="getTodayDate()" required>
+              </div>
+              <button type="submit" class="btn-accent" :disabled="paymentLoading">
+                <span x-show="!paymentLoading">Guardar abono</span>
+                <span x-show="paymentLoading">Guardando...</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    function app() {
+      return {
+        screen: 'new',
+        loans: [],
+        selectedLoan: null,
+        payments: [],
+        loading: false,
+        paymentLoading: false,
+        message: null,
+        paymentMessage: null,
+        form: {
+          nombre: '',
+          telefono: '',
+          monto_total: '',
+          fecha_prestamo: ''
+        },
+        newPayment: {
+          monto: '',
+          fecha: ''
+        },
+        apiBase: 'http://146.190.39.178:5678/webhook',
+        apiKey: 'test-key',
+
+        async init() {
+          this.form.fecha_prestamo = this.getTodayDate();
+          this.newPayment.fecha = this.getTodayDate();
+        },
+
+        getTodayDate() {
+          const d = new Date();
+          return d.toISOString().split('T')[0];
+        },
+
+        formatDate(dateStr) {
+          if (!dateStr) return '-';
+          const d = new Date(dateStr + 'T00:00:00Z');
+          return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+        },
+
+        formatCurrency(num) {
+          if (!num) return '$0';
+          return '$' + Math.round(num).toLocaleString('es-CO');
+        },
+
+        getDays(dateStr) {
+          if (!dateStr) return 0;
+          const d = new Date(dateStr + 'T00:00:00Z');
+          const now = new Date();
+          const days = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+          return Math.max(0, days);
+        },
+
+        async submitLoan() {
+          if (!this.form.nombre || !this.form.telefono || !this.form.monto_total || !this.form.fecha_prestamo) {
+            this.message = { type: 'error', text: 'Completa todos los campos' };
+            return;
+          }
+
+          this.loading = true;
+          this.message = null;
+
+          try {
+            const res = await fetch(`${this.apiBase}/prestamos/nuevo`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-API-Key': this.apiKey },
+              body: JSON.stringify(this.form)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              this.message = { type: 'success', text: `Préstamo registrado: ${data.prestamo_id}` };
+              this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate() };
+              setTimeout(() => { this.screen = 'active'; this.loadLoans(); }, 1000);
+            } else {
+              this.message = { type: 'error', text: data.error || 'Error al registrar' };
+            }
+          } catch (e) {
+            this.message = { type: 'error', text: 'Error de conexión: ' + e.message };
+          }
+          this.loading = false;
+        },
+
+        async loadLoans() {
+          try {
+            const res = await fetch(`${this.apiBase}/prestamos/activos`, {
+              headers: { 'X-API-Key': this.apiKey }
+            });
+            const data = await res.json();
+            this.loans = Array.isArray(data) ? data : [];
+          } catch (e) {
+            console.error('Error loading loans:', e);
+          }
+        },
+
+        async loadPayments(prestamo_id) {
+          try {
+            const res = await fetch(`${this.apiBase}/prestamos/${prestamo_id}?id=${prestamo_id}`, {
+              headers: { 'X-API-Key': this.apiKey }
+            });
+            const data = await res.json();
+            this.payments = data.abonos || [];
+          } catch (e) {
+            console.error('Error loading payments:', e);
+          }
+        },
+
+        async submitPayment() {
+          if (!this.newPayment.monto || !this.newPayment.fecha || !this.selectedLoan) {
+            this.paymentMessage = { type: 'error', text: 'Completa todos los campos' };
+            return;
+          }
+
+          this.paymentLoading = true;
+          this.paymentMessage = null;
+
+          try {
+            const res = await fetch(`${this.apiBase}/prestamos/abono`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-API-Key': this.apiKey },
+              body: JSON.stringify({
+                prestamo_id: this.selectedLoan.prestamo_id,
+                monto: this.newPayment.monto,
+                fecha: this.newPayment.fecha
+              })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              this.paymentMessage = { type: 'success', text: `Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
+              this.newPayment = { monto: '', fecha: this.getTodayDate() };
+              await this.loadPayments(this.selectedLoan.prestamo_id);
+              await this.loadLoans();
+            } else {
+              this.paymentMessage = { type: 'error', text: data.error || 'Error al registrar' };
+            }
+          } catch (e) {
+            this.paymentMessage = { type: 'error', text: 'Error de conexión: ' + e.message };
+          }
+          this.paymentLoading = false;
+        }
+      };
+    }
+  </script>
+</body>
+</html>

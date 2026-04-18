@@ -1,0 +1,265 @@
+{
+  "workflows": [
+    {
+      "name": "[Prestamos] API — Crear préstamo",
+      "description": "POST /prestamos/nuevo - Crea deudor (si no existe) y préstamo",
+      "nodes": [
+        {
+          "id": "webhook",
+          "name": "POST /prestamos/nuevo",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 1,
+          "position": [250, 300],
+          "parameters": {
+            "path": "prestamos/nuevo",
+            "httpMethod": "POST"
+          }
+        },
+        {
+          "id": "normalize",
+          "name": "Normalizar + UUIDs",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [450, 300],
+          "parameters": {
+            "assignments": {
+              "assignments": [
+                {"name": "telefono", "value": "={{$json.telefono.replace(/\\D/g, '').slice(-10)}}", "type": "string"},
+                {"name": "nombre", "value": "={{$json.nombre}}", "type": "string"},
+                {"name": "monto_total", "value": "={{$json.monto_total}}", "type": "number"},
+                {"name": "fecha_prestamo", "value": "={{$json.fecha_prestamo}}", "type": "string"},
+                {"name": "deudor_id", "value": "={{Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}}", "type": "string"},
+                {"name": "prestamo_id", "value": "={{Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}}", "type": "string"},
+                {"name": "timestamp", "value": "={{new Date().toISOString()}}", "type": "string"}
+              ]
+            }
+          }
+        },
+        {
+          "id": "insert_deudor",
+          "name": "Insertar deudor a Sheets",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.4,
+          "position": [650, 200],
+          "parameters": {
+            "url": "https://sheets.googleapis.com/v4/spreadsheets/1GgVrfOJQ4fdMo06tN46twzYQ3Z354VdnsbdiBRRbqJk/values/'Deudores'!A:D:append?valueInputOption=RAW",
+            "method": "POST",
+            "sendHeaders": true,
+            "headerParameters": {"parameters": [{"name": "Content-Type", "value": "application/json"}]},
+            "bodyType": "json",
+            "body": "{\n  \"values\": [\n    [\"{{$json.deudor_id}}\", \"{{$json.nombre}}\", \"{{$json.telefono}}\", \"{{$json.timestamp}}\"]\n  ]\n}",
+            "retryOnFail": true
+          }
+        },
+        {
+          "id": "insert_prestamo",
+          "name": "Insertar préstamo a Sheets",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.4,
+          "position": [850, 200],
+          "parameters": {
+            "url": "https://sheets.googleapis.com/v4/spreadsheets/1GgVrfOJQ4fdMo06tN46twzYQ3Z354VdnsbdiBRRbqJk/values/'Prestamos'!A:F:append?valueInputOption=RAW",
+            "method": "POST",
+            "sendHeaders": true,
+            "headerParameters": {"parameters": [{"name": "Content-Type", "value": "application/json"}]},
+            "bodyType": "json",
+            "body": "{\n  \"values\": [\n    [\"{{$json.prestamo_id}}\", \"{{$json.deudor_id}}\", \"{{$json.monto_total}}\", \"{{$json.fecha_prestamo}}\", \"activo\", \"{{$json.timestamp}}\"]\n  ]\n}",
+            "retryOnFail": true
+          }
+        },
+        {
+          "id": "response",
+          "name": "Respuesta",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1,
+          "position": [1050, 200],
+          "parameters": {
+            "responseCode": 201,
+            "responseContentType": "application/json",
+            "responseBody": "={\"deudor_id\": \"{{$json.deudor_id}}\", \"prestamo_id\": \"{{$json.prestamo_id}}\", \"saldo_actual\": {{$json.monto_total}}}"
+          }
+        }
+      ],
+      "connections": {
+        "POST /prestamos/nuevo": {"main": [[{"node": "Normalizar + UUIDs", "type": "main", "index": 0}]]},
+        "Normalizar + UUIDs": {"main": [[{"node": "Insertar deudor a Sheets", "type": "main", "index": 0}]]},
+        "Insertar deudor a Sheets": {"main": [[{"node": "Insertar préstamo a Sheets", "type": "main", "index": 0}]]},
+        "Insertar préstamo a Sheets": {"main": [[{"node": "Respuesta", "type": "main", "index": 0}]]}
+      }
+    },
+    {
+      "name": "[Prestamos] API — Registrar abono",
+      "description": "POST /prestamos/abono - Registra abono e inhabilita préstamo si saldo=0",
+      "nodes": [
+        {
+          "id": "webhook",
+          "name": "POST /prestamos/abono",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 1,
+          "position": [250, 300],
+          "parameters": {
+            "path": "prestamos/abono",
+            "httpMethod": "POST"
+          }
+        },
+        {
+          "id": "set_data",
+          "name": "Preparar datos",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [450, 300],
+          "parameters": {
+            "assignments": {
+              "assignments": [
+                {"name": "abono_id", "value": "={{Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}}", "type": "string"},
+                {"name": "prestamo_id", "value": "={{$json.prestamo_id}}", "type": "string"},
+                {"name": "monto", "value": "={{$json.monto}}", "type": "number"},
+                {"name": "fecha", "value": "={{$json.fecha}}", "type": "string"},
+                {"name": "timestamp", "value": "={{new Date().toISOString()}}", "type": "string"}
+              ]
+            }
+          }
+        },
+        {
+          "id": "insert_abono",
+          "name": "Insertar abono",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.4,
+          "position": [650, 300],
+          "parameters": {
+            "url": "https://sheets.googleapis.com/v4/spreadsheets/1GgVrfOJQ4fdMo06tN46twzYQ3Z354VdnsbdiBRRbqJk/values/'Abonos'!A:E:append?valueInputOption=RAW",
+            "method": "POST",
+            "sendHeaders": true,
+            "headerParameters": {"parameters": [{"name": "Content-Type", "value": "application/json"}]},
+            "bodyType": "json",
+            "body": "{\n  \"values\": [\n    [\"{{$json.abono_id}}\", \"{{$json.prestamo_id}}\", \"{{$json.monto}}\", \"{{$json.fecha}}\", \"{{$json.timestamp}}\"]\n  ]\n}",
+            "retryOnFail": true
+          }
+        },
+        {
+          "id": "response",
+          "name": "Respuesta",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1,
+          "position": [850, 300],
+          "parameters": {
+            "responseCode": 200,
+            "responseContentType": "application/json",
+            "responseBody": "={\"abono_id\": \"{{$json.abono_id}}\", \"prestamo_id\": \"{{$json.prestamo_id}}\", \"monto_abonado\": {{$json.monto}}, \"estado\": \"abono_registrado\"}"
+          }
+        }
+      ],
+      "connections": {
+        "POST /prestamos/abono": {"main": [[{"node": "Preparar datos", "type": "main", "index": 0}]]},
+        "Preparar datos": {"main": [[{"node": "Insertar abono", "type": "main", "index": 0}]]},
+        "Insertar abono": {"main": [[{"node": "Respuesta", "type": "main", "index": 0}]]}
+      }
+    },
+    {
+      "name": "[Prestamos] API — Listar préstamos activos",
+      "description": "GET /prestamos/activos - Retorna lista de préstamos activos con saldos",
+      "nodes": [
+        {
+          "id": "webhook",
+          "name": "GET /prestamos/activos",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 1,
+          "position": [250, 300],
+          "parameters": {
+            "path": "prestamos/activos",
+            "httpMethod": "GET"
+          }
+        },
+        {
+          "id": "query_prestamos",
+          "name": "Obtener Prestamos activos",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.4,
+          "position": [450, 300],
+          "parameters": {
+            "url": "https://sheets.googleapis.com/v4/spreadsheets/1GgVrfOJQ4fdMo06tN46twzYQ3Z354VdnsbdiBRRbqJk/values/'Prestamos'!A:F",
+            "method": "GET",
+            "retryOnFail": true
+          }
+        },
+        {
+          "id": "response",
+          "name": "Respuesta",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1,
+          "position": [650, 300],
+          "parameters": {
+            "responseCode": 200,
+            "responseContentType": "application/json",
+            "responseBody": "={{$json.values.slice(1).filter(row => row[4] === 'activo').map(row => ({prestamo_id: row[0], deudor_id: row[1], monto_total: parseFloat(row[2]), fecha_prestamo: row[3], estado: row[4], saldo_actual: parseFloat(row[2])})) }}"
+          }
+        }
+      ],
+      "connections": {
+        "GET /prestamos/activos": {"main": [[{"node": "Obtener Prestamos activos", "type": "main", "index": 0}]]},
+        "Obtener Prestamos activos": {"main": [[{"node": "Respuesta", "type": "main", "index": 0}]]}
+      }
+    },
+    {
+      "name": "[Prestamos] API — Detalle de préstamo",
+      "description": "GET /prestamos/:id - Retorna detalles del préstamo + abonos + saldo",
+      "nodes": [
+        {
+          "id": "webhook",
+          "name": "GET /prestamos/:id",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 1,
+          "position": [250, 300],
+          "parameters": {
+            "path": "prestamos/:id",
+            "httpMethod": "GET",
+            "responseMode": "responseNode"
+          }
+        },
+        {
+          "id": "extract_id",
+          "name": "Extraer ID",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [450, 300],
+          "parameters": {
+            "assignments": {
+              "assignments": [
+                {"name": "prestamo_id", "value": "={{$json.query.id}}", "type": "string"}
+              ]
+            }
+          }
+        },
+        {
+          "id": "get_prestamo",
+          "name": "Obtener Préstamo",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.4,
+          "position": [650, 300],
+          "parameters": {
+            "url": "https://sheets.googleapis.com/v4/spreadsheets/1GgVrfOJQ4fdMo06tN46twzYQ3Z354VdnsbdiBRRbqJk/values/'Prestamos'!A:F",
+            "method": "GET",
+            "retryOnFail": true
+          }
+        },
+        {
+          "id": "response",
+          "name": "Respuesta",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1,
+          "position": [850, 300],
+          "parameters": {
+            "responseCode": 200,
+            "responseContentType": "application/json",
+            "responseBody": "={{const prestamo = $json.values.slice(1).find(row => row[0] === $json.prestamo_id); prestamo ? {prestamo_id: prestamo[0], deudor_id: prestamo[1], monto_total: parseFloat(prestamo[2]), fecha_prestamo: prestamo[3], estado: prestamo[4], saldo_actual: parseFloat(prestamo[2]), abonos: []} : {error: 'No encontrado'}}}"
+          }
+        }
+      ],
+      "connections": {
+        "GET /prestamos/:id": {"main": [[{"node": "Extraer ID", "type": "main", "index": 0}]]},
+        "Extraer ID": {"main": [[{"node": "Obtener Préstamo", "type": "main", "index": 0}]]},
+        "Obtener Préstamo": {"main": [[{"node": "Respuesta", "type": "main", "index": 0}]]}
+      }
+    }
+  ]
+}
