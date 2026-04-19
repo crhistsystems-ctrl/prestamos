@@ -1,18 +1,24 @@
 {
-  "name": "Gestor de Préstamos",
-  "short_name": "Préstamos",
-  "description": "App para registrar y gestionar préstamos",
+  "name": "Contabilidad Mobile Solution",
+  "short_name": "MS Contabilidad",
+  "description": "App de gestión de préstamos — Contabilidad Mobile Solution",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "theme_color": "#1E3A5F",
+  "theme_color": "#0D2B4F",
   "background_color": "#FAFAFA",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231E3A5F' width='192' height='192'/><text x='96' y='120' font-size='100' fill='%23C9A961' text-anchor='middle' dominant-baseline='middle' font-family='Arial'>💰</text></svg>",
+      "src": "/icons/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/logo.jpeg",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any"
     }
   ]
