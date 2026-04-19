@@ -247,7 +247,7 @@
       <div class="screen" :class="{ active: screen === 'new' }">
         <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Nuevo Préstamo</h2>
 
-        <div x-show="message" :class="['alert', message.type === 'success' ? 'alert-success' : 'alert-error']" x-text="message.text"></div>
+        <div x-show="message" :class="['alert', message?.type === 'success' ? 'alert-success' : 'alert-error']" x-text="message?.text || ''"></div>
 
         <form @submit.prevent="submitLoan()">
           <div class="form-group">
@@ -279,7 +279,7 @@
 
       <!-- SCREEN 2: Deudores Activos -->
       <div class="screen" :class="{ active: screen === 'active' }">
-        <div x-show="!selectedLoan">
+        <div x-show="!selectedLoan && !showAbono">
           <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Deudores Activos</h2>
 
           <div x-show="loans.length === 0" class="empty-state">
@@ -308,7 +308,7 @@
         </div>
 
         <!-- Deudor detail view -->
-        <div x-show="selectedLoan">
+        <div x-show="selectedLoan && !showAbono">
           <button class="back-btn" @click="selectedLoan = null">← Atrás</button>
 
           <h2 style="margin-bottom: 1rem; color: #1E3A5F;" x-text="selectedLoan?.nombre"></h2>
@@ -328,7 +328,7 @@
                   <span style="font-weight: 500; color: #1A1A1A;" x-text="formatCurrency(prest.monto_total)"></span>
                   <span style="color: #C9A961; font-weight: 600;" x-text="formatCurrency(prest.saldo)"></span>
                 </div>
-                <button class="btn-accent" style="width: 100%; padding: 0.5rem;" @click="selectedLoan = null; selectedPrestamo = prest; showAbono = true; newPayment.monto = ''; newPayment.fecha = getTodayDate()">
+                <button class="btn-accent" style="width: 100%; padding: 0.5rem;" @click="selectedPrestamo = prest; showAbono = true; newPayment.monto = ''; newPayment.fecha = getTodayDate()">
                   Abonar
                 </button>
               </div>
@@ -338,9 +338,12 @@
 
         <!-- Abono form -->
         <div x-show="showAbono && selectedPrestamo">
-          <button class="back-btn" @click="showAbono = false">← Atrás</button>
+          <button class="back-btn" @click="showAbono = false; selectedPrestamo = null">← Atrás</button>
 
-          <h2 style="margin-bottom: 1rem; color: #1E3A5F;">Registrar Abono</h2>
+          <h2 style="margin-bottom: 0.25rem; color: #1E3A5F;">Registrar Abono</h2>
+          <p style="margin-bottom: 1rem; color: #6B7280; font-size: 0.95rem;">
+            Abonando a <strong style="color: #1A1A1A;" x-text="selectedLoan?.nombre"></strong>
+          </p>
 
           <div class="detail-header">
             <div class="detail-row">
@@ -350,7 +353,7 @@
           </div>
 
           <div class="new-payment">
-            <div x-show="paymentMessage" :class="['alert', paymentMessage.type === 'success' ? 'alert-success' : 'alert-error']" x-text="paymentMessage.text"></div>
+            <div x-show="paymentMessage" :class="['alert', paymentMessage?.type === 'success' ? 'alert-success' : 'alert-error']" x-text="paymentMessage?.text || ''"></div>
             <form @submit.prevent="submitPayment()">
               <div class="form-group">
                 <label>Monto del abono</label>
@@ -509,9 +512,13 @@
 
             this.paymentMessage = { type: 'success', text: `✓ Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
             this.newPayment = { monto: '', fecha: this.getTodayDate() };
-            this.showAbono = false;
-            this.selectedPrestamo = null;
-            setTimeout(() => { this.loadLoans(); }, 1000);
+            setTimeout(() => {
+              this.showAbono = false;
+              this.selectedPrestamo = null;
+              this.selectedLoan = null;
+              this.paymentMessage = null;
+              this.loadLoans();
+            }, 1200);
           } catch (e) {
             this.paymentMessage = { type: 'error', text: 'Error de conexión: ' + e.message };
           }
