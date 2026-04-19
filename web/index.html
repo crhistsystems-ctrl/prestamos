@@ -357,7 +357,10 @@
             <form @submit.prevent="submitPayment()">
               <div class="form-group">
                 <label>Monto del abono</label>
-                <input type="number" x-model.number="newPayment.monto" placeholder="Ej: 50000" min="0" required>
+                <input type="number" x-model.number="newPayment.monto" :placeholder="'Máximo: ' + formatCurrency(selectedPrestamo?.saldo)" min="1" :max="selectedPrestamo?.saldo" required>
+                <p style="font-size: 0.8rem; color: #6B7280; margin-top: 0.25rem;">
+                  Saldo disponible: <span x-text="formatCurrency(selectedPrestamo?.saldo)"></span>
+                </p>
               </div>
               <div class="form-group">
                 <label>Fecha del abono</label>
@@ -491,6 +494,16 @@
         async submitPayment() {
           if (!this.newPayment.monto || !this.newPayment.fecha || !this.selectedPrestamo) {
             this.paymentMessage = { type: 'error', text: 'Completa todos los campos' };
+            return;
+          }
+
+          if (this.newPayment.monto <= 0) {
+            this.paymentMessage = { type: 'error', text: 'El monto debe ser mayor a 0' };
+            return;
+          }
+
+          if (this.newPayment.monto > this.selectedPrestamo.saldo) {
+            this.paymentMessage = { type: 'error', text: `El abono excede el saldo pendiente (${this.formatCurrency(this.selectedPrestamo.saldo)}). Ajusta el monto.` };
             return;
           }
 
