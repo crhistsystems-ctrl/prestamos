@@ -243,38 +243,34 @@
     </div>
 
     <div class="content">
-      <!-- SCREEN 1: Nuevo Préstamo -->
+      <!-- SCREEN 1: Crear Préstamo en Google Sheets -->
       <div class="screen" :class="{ active: screen === 'new' }">
-        <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Nuevo Préstamo</h2>
+        <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Crear Préstamo</h2>
 
-        <div x-show="message" :class="['alert', message.type === 'success' ? 'alert-success' : 'alert-error']" x-text="message.text"></div>
+        <div style="background: #E3F2FD; border-left: 4px solid #1E3A5F; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+          <p style="color: #1E3A5F; font-weight: 600; margin-bottom: 0.5rem;">📌 Los préstamos se crean en Google Sheets</p>
+          <p style="color: #555; font-size: 0.9rem; line-height: 1.5;">Accede a la hoja de cálculo y agrega una fila en la tabla <strong>Prestamos</strong> con:</p>
+        </div>
 
-        <form @submit.prevent="submitLoan()">
-          <div class="form-group">
-            <label>Nombre del deudor</label>
-            <input type="text" x-model="form.nombre" placeholder="Ej: Juan Pérez" required>
-          </div>
+        <div style="background: #FAFAFA; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; border: 1px solid #E5E7EB;">
+          <h3 style="color: #1E3A5F; font-size: 0.95rem; margin-bottom: 1rem;">Columnas requeridas:</h3>
+          <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+            <li style="padding: 0.5rem 0; color: #555;"><strong>id:</strong> Código único (UUID o timestamp)</li>
+            <li style="padding: 0.5rem 0; color: #555;"><strong>deudor_id:</strong> ID del deudor (puede ser vacío si existe en Deudores)</li>
+            <li style="padding: 0.5rem 0; color: #555;"><strong>monto_total:</strong> Capital + intereses</li>
+            <li style="padding: 0.5rem 0; color: #555;"><strong>fecha_prestamo:</strong> YYYY-MM-DD</li>
+            <li style="padding: 0.5rem 0; color: #555;"><strong>estado:</strong> "activo" (al crear)</li>
+            <li style="padding: 0.5rem 0; color: #555;"><strong>fecha_creacion:</strong> Fecha de hoy</li>
+          </ul>
+        </div>
 
-          <div class="form-group">
-            <label>Teléfono</label>
-            <input type="tel" x-model="form.telefono" placeholder="Ej: 3012345678" required>
-          </div>
+        <button class="btn-primary" @click="screen = 'active'; loadLoans()">
+          ✓ Entendido, ver activos →
+        </button>
 
-          <div class="form-group">
-            <label>Monto total (capital + intereses)</label>
-            <input type="number" x-model.number="form.monto_total" placeholder="Ej: 500000" min="0" required>
-          </div>
-
-          <div class="form-group">
-            <label>Fecha del préstamo</label>
-            <input type="date" x-model="form.fecha_prestamo" required>
-          </div>
-
-          <button type="submit" class="btn-primary" :disabled="loading">
-            <span x-show="!loading">Registrar Préstamo</span>
-            <span x-show="loading">Guardando...</span>
-          </button>
-        </form>
+        <p style="text-align: center; color: #6B7280; font-size: 0.85rem; margin-top: 2rem;">
+          Los préstamos que agregues en Google Sheets aparecerán aquí automáticamente.
+        </p>
       </div>
 
       <!-- SCREEN 2: Préstamos Activos -->
@@ -421,35 +417,8 @@
           return Math.max(0, days);
         },
 
-        async submitLoan() {
-          if (!this.form.nombre || !this.form.telefono || !this.form.monto_total || !this.form.fecha_prestamo) {
-            this.message = { type: 'error', text: 'Completa todos los campos' };
-            return;
-          }
-
-          this.loading = true;
-          this.message = null;
-
-          try {
-            const res = await fetch(`${this.apiBase}/prestamos/nuevo`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-API-Key': this.apiKey },
-              body: JSON.stringify(this.form)
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-              this.message = { type: 'success', text: `Préstamo registrado: ${data.prestamo_id}` };
-              this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate() };
-              setTimeout(() => { this.screen = 'active'; this.loadLoans(); }, 1000);
-            } else {
-              this.message = { type: 'error', text: data.error || 'Error al registrar' };
-            }
-          } catch (e) {
-            this.message = { type: 'error', text: 'Error de conexión: ' + e.message };
-          }
-          this.loading = false;
-        },
+        // submitLoan() — Deprecated: Users now create loans directly in Google Sheets
+        // async submitLoan() { ... }
 
         async loadLoans() {
           try {
