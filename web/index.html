@@ -440,15 +440,15 @@
           this.message = null;
 
           try {
-            const res = await fetch(`${this.appsScriptUrl}?action=crear_prestamo`, {
+            const res = await fetch(this.appsScriptUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+                action: 'crear_prestamo',
                 nombre: this.form.nombre,
                 telefono: this.form.telefono,
                 monto_total: this.form.monto_total,
-                fecha_prestamo: this.form.fecha_prestamo,
-                deudor_id: ''
+                fecha_prestamo: this.form.fecha_prestamo
               })
             });
 
@@ -499,10 +499,11 @@
           this.paymentMessage = null;
 
           try {
-            const res = await fetch(`${this.appsScriptUrl}?action=registrar_abono`, {
+            const res = await fetch(this.appsScriptUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+                action: 'registrar_abono',
                 prestamo_id: this.selectedPrestamo.prestamo_id,
                 monto: this.newPayment.monto,
                 fecha: this.newPayment.fecha
