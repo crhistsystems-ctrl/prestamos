@@ -260,7 +260,7 @@
 
           <div class="form-group">
             <label>Teléfono</label>
-            <input type="tel" x-model="form.telefono" placeholder="Ej: 3012345678" required>
+            <input type="tel" x-model="form.telefono" placeholder="Ej: 3012345678" maxlength="10" inputmode="numeric" required>
           </div>
 
           <div class="form-group">
@@ -474,6 +474,10 @@
           const telDigits = String(this.form.telefono).replace(/\D/g, '');
           if (telDigits.length < 7) {
             this.message = { type: 'error', text: 'El teléfono debe tener al menos 7 dígitos' };
+            return;
+          }
+          if (telDigits.length > 10) {
+            this.message = { type: 'error', text: 'El teléfono no puede tener más de 10 dígitos' };
             return;
           }
 
