@@ -1,4 +1,4 @@
-const CACHE = 'prestamos-v4';
+const CACHE = 'prestamos-v5';
 const urlsToCache = [
   '/',
   '/index.html',
