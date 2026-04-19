@@ -568,14 +568,8 @@
           this.loginLoading = true;
           this.loginError = '';
           try {
-            const res = await fetch(this.appsScriptUrl, {
-              method: 'POST',
-              body: JSON.stringify({
-                action: 'login',
-                username: this.loginForm.username,
-                password: this.loginForm.password
-              })
-            });
+            const url = `${this.appsScriptUrl}?action=login&username=${encodeURIComponent(this.loginForm.username)}&password=${encodeURIComponent(this.loginForm.password)}`;
+            const res = await fetch(url);
             const data = await res.json();
             if (data.ok && data.token) {
               this.token = data.token;
