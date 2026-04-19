@@ -233,6 +233,9 @@
 </head>
 <body>
   <div class="container" x-data="app()" @load="init()">
+    <div x-show="!online" style="background: #8B1E1E; color: white; padding: 0.5rem; text-align: center; font-size: 0.85rem; font-weight: 500;">
+      ⚠ Sin conexión a internet
+    </div>
     <header>
       <h1>💰 Préstamos</h1>
     </header>
@@ -262,7 +265,7 @@
 
           <div class="form-group">
             <label>Monto total (capital + intereses)</label>
-            <input type="number" x-model.number="form.monto_total" placeholder="Ej: 500000" min="0" required>
+            <input type="number" x-model.number="form.monto_total" placeholder="Ej: 500000" min="1" required>
           </div>
 
           <div class="form-group">
@@ -282,8 +285,16 @@
         <div x-show="!selectedLoan && !showAbono">
           <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Deudores Activos</h2>
 
-          <div x-show="loans.length === 0" class="empty-state">
+          <div x-show="loansError" class="alert alert-error">
+            No se pudo cargar la lista. <a href="#" @click.prevent="loadLoans()" style="color: #8B1E1E; text-decoration: underline; font-weight: 600;">Reintentar</a>
+          </div>
+
+          <div x-show="!loansError && loansLoaded && loans.length === 0" class="empty-state">
             <p>No hay deudores activos.</p>
+          </div>
+
+          <div x-show="!loansLoaded && !loansError" class="empty-state">
+            <p>Cargando...</p>
           </div>
 
           <template x-for="deudor in loans" :key="deudor.deudor_id">
@@ -387,14 +398,16 @@
       return {
         screen: 'new',
         loans: [],
+        loansError: false,
+        loansLoaded: false,
         selectedLoan: null,
         selectedPrestamo: null,
         showAbono: false,
-        payments: [],
         loading: false,
         paymentLoading: false,
         message: null,
         paymentMessage: null,
+        online: navigator.onLine,
         form: {
           nombre: '',
           telefono: '',
@@ -406,11 +419,13 @@
           fecha: ''
         },
         appsScriptUrl: 'https://script.google.com/macros/s/AKfycbxN7jOTn4raQlOrUjX2H96c5USl6yZzs-jV1ZGNB32x5SVhLpNYHYFb3f_qqvdOu1J2/exec',
-        apiBase: 'http://146.190.39.178:5678/webhook',
+        apiKey: 'prestamos-2026-x7k9m',
 
         async init() {
           this.form.fecha_prestamo = this.getTodayDate();
           this.newPayment.fecha = this.getTodayDate();
+          window.addEventListener('online', () => { this.online = true; });
+          window.addEventListener('offline', () => { this.online = false; });
         },
 
         getTodayDate() {
@@ -418,9 +433,16 @@
           return d.toISOString().split('T')[0];
         },
 
+        parseLocalDate(dateStr) {
+          if (!dateStr) return null;
+          const parts = String(dateStr).split('-').map(Number);
+          if (parts.length !== 3 || parts.some(isNaN)) return null;
+          return new Date(parts[0], parts[1] - 1, parts[2]);
+        },
+
         formatDate(dateStr) {
-          if (!dateStr) return '-';
-          const d = new Date(dateStr + 'T00:00:00Z');
+          const d = this.parseLocalDate(dateStr);
+          if (!d) return '-';
           return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
         },
 
@@ -430,16 +452,33 @@
         },
 
         getDays(dateStr) {
-          if (!dateStr) return 0;
-          const d = new Date(dateStr + 'T00:00:00Z');
+          const d = this.parseLocalDate(dateStr);
+          if (!d) return 0;
           const now = new Date();
-          const days = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+          const nowLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const days = Math.floor((nowLocal - d) / (1000 * 60 * 60 * 24));
           return Math.max(0, days);
         },
 
         async submitLoan() {
-          if (!this.form.nombre || !this.form.telefono || !this.form.monto_total || !this.form.fecha_prestamo) {
+          if (!this.form.nombre?.trim() || !this.form.telefono || !this.form.monto_total || !this.form.fecha_prestamo) {
             this.message = { type: 'error', text: 'Completa todos los campos' };
+            return;
+          }
+
+          if (Number(this.form.monto_total) <= 0) {
+            this.message = { type: 'error', text: 'El monto debe ser mayor a 0' };
+            return;
+          }
+
+          const telDigits = String(this.form.telefono).replace(/\D/g, '');
+          if (telDigits.length < 7) {
+            this.message = { type: 'error', text: 'El teléfono debe tener al menos 7 dígitos' };
+            return;
+          }
+
+          if (!navigator.onLine) {
+            this.message = { type: 'error', text: 'Sin conexión. Revisa tu internet e intenta de nuevo.' };
             return;
           }
 
@@ -447,48 +486,50 @@
           this.message = null;
 
           try {
-            await fetch(this.appsScriptUrl, {
+            const res = await fetch(this.appsScriptUrl, {
               method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 action: 'crear_prestamo',
-                nombre: this.form.nombre,
+                api_key: this.apiKey,
+                nombre: this.form.nombre.trim(),
                 telefono: this.form.telefono,
-                monto_total: this.form.monto_total,
+                monto_total: Number(this.form.monto_total),
                 fecha_prestamo: this.form.fecha_prestamo
               })
             });
+            const data = await res.json();
+            if (!data || !data.ok) {
+              throw new Error(data?.error || 'Respuesta inesperada del servidor');
+            }
 
             this.message = { type: 'success', text: '✓ Préstamo registrado' };
             this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate() };
-            setTimeout(() => { this.screen = 'active'; this.loadLoans(); }, 1500);
+            setTimeout(() => {
+              this.loading = false;
+              this.message = null;
+              this.screen = 'active';
+              this.loadLoans();
+            }, 1500);
           } catch (e) {
-            this.message = { type: 'error', text: 'Error: ' + e.message };
+            this.message = { type: 'error', text: 'No se pudo guardar: ' + e.message };
+            this.loading = false;
           }
-          this.loading = false;
         },
 
         async loadLoans() {
+          this.loansError = false;
+          this.loansLoaded = false;
           try {
-            const res = await fetch(`${this.appsScriptUrl}?action=deudores_activos`);
+            const res = await fetch(`${this.appsScriptUrl}?action=deudores_activos&api_key=${encodeURIComponent(this.apiKey)}`);
             const data = await res.json();
+            if (data && data.error) throw new Error(data.error);
             this.loans = Array.isArray(data) ? data : [];
+            this.loansLoaded = true;
           } catch (e) {
             console.error('Error loading loans:', e);
             this.loans = [];
-          }
-        },
-
-        async loadPayments(prestamo_id) {
-          try {
-            const res = await fetch(`${this.apiBase}/prestamos/${prestamo_id}?id=${prestamo_id}`, {
-              headers: { 'X-API-Key': this.apiKey }
-            });
-            const data = await res.json();
-            this.payments = data.abonos || [];
-          } catch (e) {
-            console.error('Error loading payments:', e);
+            this.loansError = true;
+            this.loansLoaded = true;
           }
         },
 
@@ -498,13 +539,18 @@
             return;
           }
 
-          if (this.newPayment.monto <= 0) {
+          if (Number(this.newPayment.monto) <= 0) {
             this.paymentMessage = { type: 'error', text: 'El monto debe ser mayor a 0' };
             return;
           }
 
-          if (this.newPayment.monto > this.selectedPrestamo.saldo) {
+          if (Number(this.newPayment.monto) > Number(this.selectedPrestamo.saldo)) {
             this.paymentMessage = { type: 'error', text: `El abono excede el saldo pendiente (${this.formatCurrency(this.selectedPrestamo.saldo)}). Ajusta el monto.` };
+            return;
+          }
+
+          if (!navigator.onLine) {
+            this.paymentMessage = { type: 'error', text: 'Sin conexión. Revisa tu internet e intenta de nuevo.' };
             return;
           }
 
@@ -512,21 +558,25 @@
           this.paymentMessage = null;
 
           try {
-            await fetch(this.appsScriptUrl, {
+            const res = await fetch(this.appsScriptUrl, {
               method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 action: 'registrar_abono',
+                api_key: this.apiKey,
                 prestamo_id: this.selectedPrestamo.prestamo_id,
-                monto: this.newPayment.monto,
+                monto: Number(this.newPayment.monto),
                 fecha: this.newPayment.fecha
               })
             });
+            const data = await res.json();
+            if (!data || !data.ok) {
+              throw new Error(data?.error || 'Respuesta inesperada del servidor');
+            }
 
             this.paymentMessage = { type: 'success', text: `✓ Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
             this.newPayment = { monto: '', fecha: this.getTodayDate() };
             setTimeout(() => {
+              this.paymentLoading = false;
               this.showAbono = false;
               this.selectedPrestamo = null;
               this.selectedLoan = null;
@@ -534,9 +584,9 @@
               this.loadLoans();
             }, 1200);
           } catch (e) {
-            this.paymentMessage = { type: 'error', text: 'Error de conexión: ' + e.message };
+            this.paymentMessage = { type: 'error', text: 'No se pudo guardar: ' + e.message };
+            this.paymentLoading = false;
           }
-          this.paymentLoading = false;
         }
       };
     }
