@@ -243,102 +243,113 @@
     </div>
 
     <div class="content">
-      <!-- SCREEN 1: Crear Préstamo en Google Sheets -->
+      <!-- SCREEN 1: Nuevo Préstamo -->
       <div class="screen" :class="{ active: screen === 'new' }">
-        <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Crear Préstamo</h2>
+        <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Nuevo Préstamo</h2>
 
-        <div style="background: #E3F2FD; border-left: 4px solid #1E3A5F; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
-          <p style="color: #1E3A5F; font-weight: 600; margin-bottom: 0.5rem;">📌 Los préstamos se crean en Google Sheets</p>
-          <p style="color: #555; font-size: 0.9rem; line-height: 1.5;">Accede a la hoja de cálculo y agrega una fila en la tabla <strong>Prestamos</strong> con:</p>
-        </div>
+        <div x-show="message" :class="['alert', message.type === 'success' ? 'alert-success' : 'alert-error']" x-text="message.text"></div>
 
-        <div style="background: #FAFAFA; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; border: 1px solid #E5E7EB;">
-          <h3 style="color: #1E3A5F; font-size: 0.95rem; margin-bottom: 1rem;">Columnas requeridas:</h3>
-          <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
-            <li style="padding: 0.5rem 0; color: #555;"><strong>id:</strong> Código único (UUID o timestamp)</li>
-            <li style="padding: 0.5rem 0; color: #555;"><strong>deudor_id:</strong> ID del deudor (puede ser vacío si existe en Deudores)</li>
-            <li style="padding: 0.5rem 0; color: #555;"><strong>monto_total:</strong> Capital + intereses</li>
-            <li style="padding: 0.5rem 0; color: #555;"><strong>fecha_prestamo:</strong> YYYY-MM-DD</li>
-            <li style="padding: 0.5rem 0; color: #555;"><strong>estado:</strong> "activo" (al crear)</li>
-            <li style="padding: 0.5rem 0; color: #555;"><strong>fecha_creacion:</strong> Fecha de hoy</li>
-          </ul>
-        </div>
-
-        <button class="btn-primary" @click="screen = 'active'; loadLoans()">
-          ✓ Entendido, ver activos →
-        </button>
-
-        <p style="text-align: center; color: #6B7280; font-size: 0.85rem; margin-top: 2rem;">
-          Los préstamos que agregues en Google Sheets aparecerán aquí automáticamente.
-        </p>
-      </div>
-
-      <!-- SCREEN 2: Préstamos Activos -->
-      <div class="screen" :class="{ active: screen === 'active' }">
-        <div x-show="!selectedLoan">
-          <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Préstamos Activos</h2>
-
-          <div x-show="loans.length === 0" class="empty-state">
-            <p>No hay préstamos activos.</p>
+        <form @submit.prevent="submitLoan()">
+          <div class="form-group">
+            <label>Nombre del deudor</label>
+            <input type="text" x-model="form.nombre" placeholder="Ej: Juan Pérez" required>
           </div>
 
-          <template x-for="loan in loans" :key="loan.prestamo_id">
-            <div class="loan-card" :class="{ active: selectedLoan?.prestamo_id === loan.prestamo_id }" @click="selectedLoan = loan; loadPayments(loan.prestamo_id)">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" x-model="form.telefono" placeholder="Ej: 3012345678" required>
+          </div>
+
+          <div class="form-group">
+            <label>Monto total (capital + intereses)</label>
+            <input type="number" x-model.number="form.monto_total" placeholder="Ej: 500000" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha del préstamo</label>
+            <input type="date" x-model="form.fecha_prestamo" required>
+          </div>
+
+          <button type="submit" class="btn-primary" :disabled="loading">
+            <span x-show="!loading">Registrar Préstamo</span>
+            <span x-show="loading">Guardando...</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- SCREEN 2: Deudores Activos -->
+      <div class="screen" :class="{ active: screen === 'active' }">
+        <div x-show="!selectedLoan">
+          <h2 style="margin-bottom: 1.5rem; color: #1E3A5F;">Deudores Activos</h2>
+
+          <div x-show="loans.length === 0" class="empty-state">
+            <p>No hay deudores activos.</p>
+          </div>
+
+          <template x-for="deudor in loans" :key="deudor.deudor_id">
+            <div class="loan-card" @click="selectedLoan = deudor">
               <div class="loan-header">
                 <div>
-                  <div class="loan-name" x-text="loan.deudor_nombre"></div>
-                  <div class="loan-phone" x-text="loan.deudor_telefono"></div>
+                  <div class="loan-name" x-text="deudor.nombre"></div>
                 </div>
-                <div class="days-badge" x-text="getDays(loan.fecha_prestamo) + ' días'"></div>
               </div>
               <div class="loan-amounts">
                 <div class="amount-box">
-                  <div class="amount-label">Total</div>
-                  <div class="amount-value" x-text="formatCurrency(loan.monto_total)"></div>
+                  <div class="amount-label">Saldo total</div>
+                  <div class="amount-value accent" x-text="formatCurrency(deudor.saldo)"></div>
                 </div>
                 <div class="amount-box">
-                  <div class="amount-label">Saldo</div>
-                  <div class="amount-value accent" x-text="formatCurrency(loan.saldo_actual)"></div>
+                  <div class="amount-label">Préstamos</div>
+                  <div class="amount-value" x-text="deudor.prestamos.length"></div>
                 </div>
               </div>
             </div>
           </template>
         </div>
 
-        <!-- Detail view -->
+        <!-- Deudor detail view -->
         <div x-show="selectedLoan">
-          <button class="back-btn" @click="selectedLoan = null; payments = []">← Atrás</button>
+          <button class="back-btn" @click="selectedLoan = null">← Atrás</button>
 
-          <h2 style="margin-bottom: 1rem; color: #1E3A5F;" x-text="selectedLoan?.deudor_nombre"></h2>
+          <h2 style="margin-bottom: 1rem; color: #1E3A5F;" x-text="selectedLoan?.nombre"></h2>
 
           <div class="detail-header">
             <div class="detail-row">
-              <span class="detail-label">Monto total</span>
-              <span class="detail-value" x-text="formatCurrency(selectedLoan?.monto_total)"></span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Saldo pendiente</span>
-              <span class="detail-value" style="color: #C9A961;" x-text="formatCurrency(selectedLoan?.saldo_actual)"></span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Fecha préstamo</span>
-              <span class="detail-value" x-text="formatDate(selectedLoan?.fecha_prestamo)"></span>
+              <span class="detail-label">Saldo total</span>
+              <span class="detail-value accent" x-text="formatCurrency(selectedLoan?.saldo)"></span>
             </div>
           </div>
 
           <div class="history">
-            <h3>Historial de abonos</h3>
-            <div x-show="payments.length === 0" style="color: #6B7280; font-size: 0.875rem;">Sin abonos aún</div>
-            <template x-for="pago in payments" :key="pago.id">
-              <div class="payment-item">
-                <span class="payment-date" x-text="formatDate(pago.fecha)"></span>
-                <span class="payment-amount" x-text="formatCurrency(pago.monto)"></span>
+            <h3>Préstamos</h3>
+            <template x-for="prest in selectedLoan?.prestamos" :key="prest.prestamo_id">
+              <div style="padding: 1rem; background: #FAFAFA; border-radius: 4px; margin-bottom: 0.75rem; border-left: 3px solid #C9A961;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #1A1A1A;" x-text="formatCurrency(prest.monto_total)"></span>
+                  <span style="color: #C9A961; font-weight: 600;" x-text="formatCurrency(prest.saldo)"></span>
+                </div>
+                <button class="btn-accent" style="width: 100%; padding: 0.5rem;" @click="selectedLoan = null; selectedPrestamo = prest; showAbono = true; newPayment.monto = ''; newPayment.fecha = getTodayDate()">
+                  Abonar
+                </button>
               </div>
             </template>
           </div>
+        </div>
+
+        <!-- Abono form -->
+        <div x-show="showAbono && selectedPrestamo">
+          <button class="back-btn" @click="showAbono = false">← Atrás</button>
+
+          <h2 style="margin-bottom: 1rem; color: #1E3A5F;">Registrar Abono</h2>
+
+          <div class="detail-header">
+            <div class="detail-row">
+              <span class="detail-label">Saldo pendiente</span>
+              <span class="detail-value accent" x-text="formatCurrency(selectedPrestamo?.saldo)"></span>
+            </div>
+          </div>
 
           <div class="new-payment">
-            <h3>Registrar nuevo abono</h3>
             <div x-show="paymentMessage" :class="['alert', paymentMessage.type === 'success' ? 'alert-success' : 'alert-error']" x-text="paymentMessage.text"></div>
             <form @submit.prevent="submitPayment()">
               <div class="form-group">
@@ -347,10 +358,10 @@
               </div>
               <div class="form-group">
                 <label>Fecha del abono</label>
-                <input type="date" x-model="newPayment.fecha" :value="getTodayDate()" required>
+                <input type="date" x-model="newPayment.fecha" required>
               </div>
-              <button type="submit" class="btn-accent" :disabled="paymentLoading">
-                <span x-show="!paymentLoading">Guardar abono</span>
+              <button type="submit" class="btn-primary" :disabled="paymentLoading">
+                <span x-show="!paymentLoading">✓ Guardar abono</span>
                 <span x-show="paymentLoading">Guardando...</span>
               </button>
             </form>
@@ -370,6 +381,8 @@
         screen: 'new',
         loans: [],
         selectedLoan: null,
+        selectedPrestamo: null,
+        showAbono: false,
         payments: [],
         loading: false,
         paymentLoading: false,
@@ -385,8 +398,8 @@
           monto: '',
           fecha: ''
         },
+        appsScriptUrl: 'https://script.google.com/macros/s/AKfycbxN7jOTn4raQlOrUjX2H96c5USl6yZzs-jV1ZGNB32x5SVhLpNYHYFb3f_qqvdOu1J2/exec',
         apiBase: 'http://146.190.39.178:5678/webhook',
-        apiKey: 'test-key',
 
         async init() {
           this.form.fecha_prestamo = this.getTodayDate();
@@ -417,18 +430,50 @@
           return Math.max(0, days);
         },
 
-        // submitLoan() — Deprecated: Users now create loans directly in Google Sheets
-        // async submitLoan() { ... }
+        async submitLoan() {
+          if (!this.form.nombre || !this.form.telefono || !this.form.monto_total || !this.form.fecha_prestamo) {
+            this.message = { type: 'error', text: 'Completa todos los campos' };
+            return;
+          }
+
+          this.loading = true;
+          this.message = null;
+
+          try {
+            const res = await fetch(`${this.appsScriptUrl}?action=crear_prestamo`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                nombre: this.form.nombre,
+                telefono: this.form.telefono,
+                monto_total: this.form.monto_total,
+                fecha_prestamo: this.form.fecha_prestamo,
+                deudor_id: ''
+              })
+            });
+
+            const data = await res.json();
+            if (data.ok) {
+              this.message = { type: 'success', text: '✓ Préstamo registrado' };
+              this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate() };
+              setTimeout(() => { this.screen = 'active'; this.loadLoans(); }, 1000);
+            } else {
+              this.message = { type: 'error', text: data.error || 'Error al registrar' };
+            }
+          } catch (e) {
+            this.message = { type: 'error', text: 'Error: ' + e.message };
+          }
+          this.loading = false;
+        },
 
         async loadLoans() {
           try {
-            const res = await fetch(`${this.apiBase}/prestamos/activos`, {
-              headers: { 'X-API-Key': this.apiKey }
-            });
+            const res = await fetch(`${this.appsScriptUrl}?action=deudores_activos`);
             const data = await res.json();
             this.loans = Array.isArray(data) ? data : [];
           } catch (e) {
             console.error('Error loading loans:', e);
+            this.loans = [];
           }
         },
 
@@ -445,7 +490,7 @@
         },
 
         async submitPayment() {
-          if (!this.newPayment.monto || !this.newPayment.fecha || !this.selectedLoan) {
+          if (!this.newPayment.monto || !this.newPayment.fecha || !this.selectedPrestamo) {
             this.paymentMessage = { type: 'error', text: 'Completa todos los campos' };
             return;
           }
@@ -454,21 +499,22 @@
           this.paymentMessage = null;
 
           try {
-            const res = await fetch(`${this.apiBase}/prestamos/abono`, {
+            const res = await fetch(`${this.appsScriptUrl}?action=registrar_abono`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-API-Key': this.apiKey },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                prestamo_id: this.selectedLoan.prestamo_id,
+                prestamo_id: this.selectedPrestamo.prestamo_id,
                 monto: this.newPayment.monto,
                 fecha: this.newPayment.fecha
               })
             });
 
             const data = await res.json();
-            if (res.ok) {
-              this.paymentMessage = { type: 'success', text: `Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
+            if (data.ok) {
+              this.paymentMessage = { type: 'success', text: `✓ Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
               this.newPayment = { monto: '', fecha: this.getTodayDate() };
-              await this.loadPayments(this.selectedLoan.prestamo_id);
+              this.showAbono = false;
+              this.selectedPrestamo = null;
               await this.loadLoans();
             } else {
               this.paymentMessage = { type: 'error', text: data.error || 'Error al registrar' };
