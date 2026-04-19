@@ -328,6 +328,7 @@
                   <span style="font-weight: 500; color: #1A1A1A;" x-text="formatCurrency(prest.monto_total)"></span>
                   <span style="color: #C9A961; font-weight: 600;" x-text="formatCurrency(prest.saldo)"></span>
                 </div>
+                <div style="margin-bottom: 0.75rem; font-size: 0.8rem; color: #6B7280;" x-text="formatDate(prest.fecha_prestamo)"></div>
                 <button class="btn-accent" style="width: 100%; padding: 0.5rem;" @click="selectedPrestamo = prest; showAbono = true; newPayment.monto = ''; newPayment.fecha = getTodayDate()">
                   Abonar
                 </button>
