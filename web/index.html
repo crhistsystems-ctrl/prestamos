@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
+    [x-cloak] { display: none; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
@@ -242,19 +243,124 @@
       color: #6B7280;
     }
     .empty-state p { font-size: 0.875rem; margin-bottom: 1rem; }
+
+    .login-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0D2B4F 0%, #1a4d7a 100%);
+      padding: 1.5rem;
+    }
+    .login-box {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 340px;
+    }
+    .login-box h1 {
+      font-size: 1.5rem;
+      color: #0D2B4F;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .login-box .subtitle {
+      text-align: center;
+      color: #6B7280;
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+    .login-box .form-group {
+      margin-bottom: 1.25rem;
+    }
+    .login-box label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #1A1A1A;
+      font-size: 0.9rem;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .login-box input:focus {
+      outline: none;
+      border-color: #3A8FD1;
+      box-shadow: 0 0 0 3px rgba(58, 143, 209, 0.15);
+    }
+    .login-box .btn-primary {
+      width: 100%;
+      background: #0D2B4F;
+      color: white;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .login-box .btn-primary:hover {
+      background: #071a33;
+    }
+    .login-box .btn-primary:active {
+      opacity: 0.9;
+    }
+    .login-error {
+      background: #ffebee;
+      color: #8B1E1E;
+      border: 1px solid #ffcdd2;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
-  <div class="container" x-data="app()" @load="init()">
+  <div class="login-screen" x-data="app()" @load="init()" x-cloak x-show="!authenticated">
+    <div class="login-box">
+      <h1>Contabilidad</h1>
+      <p class="subtitle">Mobile Solution</p>
+      <div x-show="loginError" class="login-error" x-text="loginError"></div>
+      <form @submit.prevent="login()">
+        <div class="form-group">
+          <label>Usuario</label>
+          <input type="text" x-model="loginForm.username" placeholder="Ej: MobileSolution" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" x-model="loginForm.password" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn-primary" :disabled="loginLoading">
+          <span x-show="!loginLoading">Acceder</span>
+          <span x-show="loginLoading">Verificando...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container" x-data="app()" @load="init()" x-cloak x-show="authenticated">
     <div x-show="!online" style="background: #8B1E1E; color: white; padding: 0.5rem; text-align: center; font-size: 0.85rem; font-weight: 500;">
       ⚠ Sin conexión a internet
     </div>
-    <header>
-      <img src="/icons/logo.jpeg" alt="Logo">
-      <div class="brand">
-        <h1>Contabilidad</h1>
-        <small>Mobile Solution</small>
+    <header style="justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <img src="/icons/logo.jpeg" alt="Logo">
+        <div class="brand">
+          <h1>Contabilidad</h1>
+          <small>Mobile Solution</small>
+        </div>
       </div>
+      <button @click="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 500;" title="Cerrar sesión">Salir</button>
     </header>
 
     <div class="tabs">
@@ -413,6 +519,12 @@
 
     function app() {
       return {
+        authenticated: false,
+        token: null,
+        loginForm: { username: '', password: '' },
+        loginLoading: false,
+        loginError: '',
+
         screen: 'new',
         loans: [],
         loansError: false,
@@ -436,13 +548,59 @@
           fecha: ''
         },
         appsScriptUrl: 'https://script.google.com/macros/s/AKfycbx1jEv1ha_W5vwRhzY3RrXwOzpbf6RP_RGG-Z2tJmDDpVdZ_Am7ZrhdITFxiNIXK-mr/exec',
-        apiKey: 'prestamos-2026-x7k9m',
 
         async init() {
+          this.token = localStorage.getItem('prestamos_token');
+          if (this.token) {
+            this.authenticated = true;
+          }
           this.form.fecha_prestamo = this.getTodayDate();
           this.newPayment.fecha = this.getTodayDate();
           window.addEventListener('online', () => { this.online = true; });
           window.addEventListener('offline', () => { this.online = false; });
+        },
+
+        async login() {
+          if (!this.loginForm.username || !this.loginForm.password) {
+            this.loginError = 'Completa usuario y contraseña';
+            return;
+          }
+          this.loginLoading = true;
+          this.loginError = '';
+          try {
+            const res = await fetch(this.appsScriptUrl, {
+              method: 'POST',
+              body: JSON.stringify({
+                action: 'login',
+                username: this.loginForm.username,
+                password: this.loginForm.password
+              })
+            });
+            const data = await res.json();
+            if (data.ok && data.token) {
+              this.token = data.token;
+              localStorage.setItem('prestamos_token', this.token);
+              this.authenticated = true;
+              this.loginForm = { username: '', password: '' };
+              this.loginLoading = false;
+            } else {
+              this.loginError = data.error || 'Credenciales inválidas';
+              this.loginLoading = false;
+            }
+          } catch (e) {
+            this.loginError = 'Error: ' + e.message;
+            this.loginLoading = false;
+          }
+        },
+
+        logout() {
+          if (confirm('¿Cerrar sesión?')) {
+            localStorage.removeItem('prestamos_token');
+            this.token = null;
+            this.authenticated = false;
+            this.loginForm = { username: '', password: '' };
+            this.loginError = '';
+          }
         },
 
         getTodayDate() {
@@ -511,7 +669,7 @@
               method: 'POST',
               body: JSON.stringify({
                 action: 'crear_prestamo',
-                api_key: this.apiKey,
+                token: this.token,
                 nombre: this.form.nombre.trim(),
                 telefono: this.form.telefono,
                 monto_total: Number(this.form.monto_total),
@@ -541,9 +699,15 @@
           this.loansError = false;
           this.loansLoaded = false;
           try {
-            const res = await fetch(`${this.appsScriptUrl}?action=deudores_activos&api_key=${encodeURIComponent(this.apiKey)}`);
+            const res = await fetch(`${this.appsScriptUrl}?action=deudores_activos&token=${encodeURIComponent(this.token)}`);
             const data = await res.json();
-            if (data && data.error) throw new Error(data.error);
+            if (data && data.error) {
+              if (data.code === 401) {
+                this.authenticated = false;
+                localStorage.removeItem('prestamos_token');
+              }
+              throw new Error(data.error);
+            }
             this.loans = Array.isArray(data) ? data : [];
             this.loansLoaded = true;
           } catch (e) {
@@ -583,7 +747,7 @@
               method: 'POST',
               body: JSON.stringify({
                 action: 'registrar_abono',
-                api_key: this.apiKey,
+                token: this.token,
                 prestamo_id: this.selectedPrestamo.prestamo_id,
                 monto: Number(this.newPayment.monto),
                 fecha: this.newPayment.fecha
