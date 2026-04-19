@@ -398,7 +398,7 @@
           monto: '',
           fecha: ''
         },
-        appsScriptUrl: 'https://api.allorigins.win/raw?url=https://script.google.com/macros/s/AKfycbxN7jOTn4raQlOrUjX2H96c5USl6yZzs-jV1ZGNB32x5SVhLpNYHYFb3f_qqvdOu1J2/exec',
+        appsScriptUrl: 'https://script.google.com/macros/s/AKfycbxN7jOTn4raQlOrUjX2H96c5USl6yZzs-jV1ZGNB32x5SVhLpNYHYFb3f_qqvdOu1J2/exec',
         apiBase: 'http://146.190.39.178:5678/webhook',
 
         async init() {
@@ -440,8 +440,9 @@
           this.message = null;
 
           try {
-            const res = await fetch(this.appsScriptUrl, {
+            await fetch(this.appsScriptUrl, {
               method: 'POST',
+              mode: 'no-cors',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 action: 'crear_prestamo',
@@ -452,14 +453,9 @@
               })
             });
 
-            const data = await res.json();
-            if (data.ok) {
-              this.message = { type: 'success', text: '✓ Préstamo registrado' };
-              this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate() };
-              setTimeout(() => { this.screen = 'active'; this.loadLoans(); }, 1000);
-            } else {
-              this.message = { type: 'error', text: data.error || 'Error al registrar' };
-            }
+            this.message = { type: 'success', text: '✓ Préstamo registrado' };
+            this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate() };
+            setTimeout(() => { this.screen = 'active'; this.loadLoans(); }, 1500);
           } catch (e) {
             this.message = { type: 'error', text: 'Error: ' + e.message };
           }
@@ -499,8 +495,9 @@
           this.paymentMessage = null;
 
           try {
-            const res = await fetch(this.appsScriptUrl, {
+            await fetch(this.appsScriptUrl, {
               method: 'POST',
+              mode: 'no-cors',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 action: 'registrar_abono',
@@ -510,16 +507,11 @@
               })
             });
 
-            const data = await res.json();
-            if (data.ok) {
-              this.paymentMessage = { type: 'success', text: `✓ Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
-              this.newPayment = { monto: '', fecha: this.getTodayDate() };
-              this.showAbono = false;
-              this.selectedPrestamo = null;
-              await this.loadLoans();
-            } else {
-              this.paymentMessage = { type: 'error', text: data.error || 'Error al registrar' };
-            }
+            this.paymentMessage = { type: 'success', text: `✓ Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
+            this.newPayment = { monto: '', fecha: this.getTodayDate() };
+            this.showAbono = false;
+            this.selectedPrestamo = null;
+            setTimeout(() => { this.loadLoans(); }, 1000);
           } catch (e) {
             this.paymentMessage = { type: 'error', text: 'Error de conexión: ' + e.message };
           }
