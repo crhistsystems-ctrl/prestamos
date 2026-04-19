@@ -464,6 +464,19 @@
                   <span style="color: #3A8FD1; font-weight: 600;" x-text="formatCurrency(prest.saldo)"></span>
                 </div>
                 <div style="margin-bottom: 0.75rem; font-size: 0.8rem; color: #6B7280;" x-text="formatDate(prest.fecha_prestamo)"></div>
+
+                <div x-show="prest.abonos && prest.abonos.length > 0" style="margin-bottom: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #E5E7EB;">
+                  <div style="font-size: 0.7rem; text-transform: uppercase; color: #6B7280; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: 0.5px;">
+                    Abonos (<span x-text="prest.abonos.length"></span>)
+                  </div>
+                  <template x-for="(abono, idx) in [...prest.abonos].reverse()" :key="idx">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem; background: white; border-radius: 3px; margin-bottom: 0.25rem; font-size: 0.85rem;">
+                      <span style="color: #6B7280;" x-text="formatDate(abono.fecha)"></span>
+                      <span style="font-weight: 600; color: #2D6A4F;" x-text="'+ ' + formatCurrency(abono.monto)"></span>
+                    </div>
+                  </template>
+                </div>
+
                 <button class="btn-accent" style="width: 100%; padding: 0.5rem;" @click="selectedPrestamo = prest; showAbono = true; newPayment.monto = ''; newPayment.fecha = getTodayDate()">
                   Abonar
                 </button>
