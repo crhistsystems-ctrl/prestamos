@@ -619,7 +619,15 @@
 
         parseLocalDate(dateStr) {
           if (!dateStr) return null;
-          const parts = String(dateStr).split('-').map(Number);
+          if (dateStr instanceof Date) return dateStr;
+          const s = String(dateStr);
+          // Si es ISO datetime (contiene T), usa Date directo
+          if (s.includes('T')) {
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+          }
+          // Formato YYYY-MM-DD
+          const parts = s.split('-').map(Number);
           if (parts.length !== 3 || parts.some(isNaN)) return null;
           return new Date(parts[0], parts[1] - 1, parts[2]);
         },
