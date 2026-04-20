@@ -69,11 +69,11 @@ Tap en un préstamo → vista de detalle:
 Cliente (prestamista) abre la app en su celular
          │
          ▼
-PWA custom (HTML + Tailwind + Alpine.js)
+PWA custom (HTML + CSS + Alpine.js)
 Hospedada en Vercel bajo subdominio prestamos.crhist.dev
          │
-         ▼  (fetch JSON via webhooks)
-n8n backend (instancia en 146.190.39.178:5678)
+         ▼  (fetch JSON directo)
+Google Apps Script Web App (doGet/doPost)
          │
          ▼
 Google Sheets (en cuenta del desarrollador, NO del cliente)
@@ -83,11 +83,13 @@ Google Sheets (en cuenta del desarrollador, NO del cliente)
 
 | Componente | Elección | Razón |
 |---|---|---|
-| Frontend | PWA con HTML + Tailwind + Alpine.js | Ligero, sin build step, se ve pulido, funciona offline, instalable al home screen |
+| Frontend | PWA con HTML + CSS + Alpine.js | Ligero, sin build step, funciona offline, instalable al home screen |
 | Hosting frontend | Vercel free tier | Gratis para 1 usuario, deploy automático desde Git |
-| Backend | n8n (ya existente) | Reusa infra actual, webhooks rápidos de montar |
+| Backend | Google Apps Script (Web App) | Corre junto al Spreadsheet, una sola URL `/exec`, cero infra propia |
 | Base de datos | Google Sheets | Simple para 15-50 deudores; fácil de respaldar; si escala, se migra a Supabase |
 | Dominio | `prestamos.crhist.dev` (subdominio del desarrollador) | Control total, sin pagos adicionales |
+
+**Nota histórica**: el plan original era n8n + Google Sheets (ver sección "Workflows n8n descontinuados" más abajo). Durante la construcción se pivotó a Apps Script por: menos latencia, menos piezas que pueden fallar, no depende del VPS n8n, y Apps Script puede leer/escribir el Spreadsheet directamente con `SpreadsheetApp.openById(...)`.
 
 ### Colores (diseño formal, elegido para sector financiero)
 
@@ -104,7 +106,9 @@ Tipografía: Inter (via Google Fonts) — limpia y profesional.
 
 ### Nombre de la app
 
-**Pendiente** — el cliente lo decidirá después. Por ahora usar placeholder "Préstamos" o el nombre del cliente si se conoce.
+**Contabilidad Mobile Solution** (rebrand definido por el cliente el 2026-04-19). Logo: silver/chrome circular. Colores actualizados al logo:
+- Primary: `#0D2B4F` (navy profundo del fondo del logo)
+- Accent: `#3A8FD1` (azul claro del logo)
 
 ---
 
@@ -147,47 +151,54 @@ Tipografía: Inter (via Google Fonts) — limpia y profesional.
 
 ```
 c:\Cursor\Prestamos\
-├── .mcp.json              # Conexión MCP a n8n (ya creada)
+├── .mcp.json              # Conexión MCP a n8n (existente, pero n8n ya no se usa)
 ├── CLAUDE.md              # Este archivo
-├── web/                   # PWA (por construir)
-│   ├── index.html
-│   ├── app.js
-│   ├── styles.css
-│   ├── manifest.json
-│   ├── sw.js              # Service worker
+├── web/                   # PWA desplegada en Vercel
+│   ├── index.html         # Todo el código (HTML + CSS + Alpine.js inline)
+│   ├── manifest.json      # PWA manifest (nombre, theme color, icons)
+│   ├── sw.js              # Service worker (network-first, v5)
 │   └── icons/
-├── n8n/                   # Definiciones de workflows (por construir)
-│   └── (workflows exportados como JSON para versionar)
-└── docs/                  # Notas del proyecto si hacen falta
+│       └── logo.jpeg      # Logo del cliente (Contabilidad Mobile Solution)
+└── .env                   # Credenciales (no commiteado)
 ```
+
+El código del backend (Apps Script) vive en [script.google.com](https://script.google.com), ligado al Spreadsheet de Google Sheets. No está en el repo.
 
 ---
 
-## Workflows n8n a construir
+## Backend: Google Apps Script
 
-Tag recomendado: `prestamos`. Naming: `[Préstamos] <descripción>`.
+**URL activa**: `https://script.google.com/macros/s/AKfycbyQLwDJQI5coAzctEZOABzahiVmhWQA1IVJfZnpq8lC5xruI-nxHAUvtuEAc7fUOTRS/exec`
 
-1. **[Préstamos] API — Crear préstamo**
-   - Webhook POST `/prestamos/nuevo`
-   - Input: `{ nombre, telefono, monto_total, fecha_prestamo }`
-   - Lógica: busca deudor por teléfono normalizado → si existe usa su id, si no lo crea → crea préstamo con estado "activo"
-   - Output: `{ deudor_id, prestamo_id, saldo_actual }`
+**Spreadsheet ID**: `1GgVrfOJQ4fdMo06tN46twzYQ3Z354VdnsbdiBRRbqJk`
 
-2. **[Préstamos] API — Registrar abono**
-   - Webhook POST `/prestamos/abono`
-   - Input: `{ prestamo_id, monto, fecha }`
-   - Lógica: inserta abono → calcula nuevo saldo → si saldo = 0, marca préstamo como "pagado"
-   - Output: `{ saldo_actual, estado }`
+**Importante**: el Apps Script usa `SpreadsheetApp.openById(SHEET_ID)`, NO `getActiveSpreadsheet()` (este último devuelve null en Web App deployments).
 
-3. **[Préstamos] API — Listar préstamos activos**
-   - Webhook GET `/prestamos/activos`
-   - Output: array de `{ prestamo_id, deudor_nombre, deudor_telefono, monto_total, saldo_actual, dias_transcurridos, fecha_prestamo }`
+### Endpoints
 
-4. **[Préstamos] API — Detalle de préstamo**
-   - Webhook GET `/prestamos/:id`
-   - Output: `{ prestamo, deudor, abonos[], saldo_actual }`
+Un solo `/exec` con acciones vía `action=` param:
 
-**Auth**: header con API key (hardcodeado en la PWA — no es crítico porque el dominio es controlado). Para producción se puede endurecer después.
+| Método | action | Descripción | Auth |
+|---|---|---|---|
+| GET | `login` | Valida user/pass, devuelve token UUID | Ninguna |
+| GET | `deudores_activos` | Lista deudores + sus préstamos + abonos | Token |
+| POST | `crear_prestamo` | Crea o reutiliza deudor + crea préstamo | Token |
+| POST | `registrar_abono` | Inserta abono + marca "pagado" si saldo=0 | Token |
+
+### Auth
+
+Username/password simples (`MobileSolution` / `1234`) definidos como constantes en Apps Script. Al hacer login exitoso, el backend genera un UUID y lo guarda en la hoja `Sessions`. El PWA lo almacena en `localStorage` y lo envía en cada request. **Los tokens no expiran** (por simplicidad — si escala, agregar expiración).
+
+### CORS / POST caveat
+
+Google Apps Script NO responde OPTIONS (preflight). Para evitar preflight:
+- GET con query params → simple request, funciona siempre
+- POST sin headers custom → fetch default es `text/plain`, simple request, funciona
+- **NO** agregar `Content-Type: application/json` en fetch — triggeraría preflight y fallaría con CORS error
+
+### Workflows n8n descontinuados
+
+Existen 4 workflows en n8n etiquetados `[Préstamos]` (Crear préstamo, Registrar abono, Listar activos, Detalle). **Están despublicados y no se usan**. Se conservan como referencia histórica por si se decide volver a n8n en el futuro.
 
 ---
 
@@ -195,8 +206,7 @@ Tag recomendado: `prestamos`. Naming: `[Préstamos] <descripción>`.
 
 | Elemento | Formato | Ejemplo |
 |---|---|---|
-| Workflow n8n | `[Préstamos] <descripción>` | `[Préstamos] API — Registrar abono` |
-| Webhook path | `/prestamos/<accion>` en kebab-case | `/prestamos/nuevo` |
+| Acciones Apps Script | snake_case en param `action` | `crear_prestamo`, `deudores_activos` |
 | Variables JS en PWA | camelCase | `montoTotal`, `saldoActual` |
 | Nombres de columnas Sheet | snake_case | `monto_total`, `fecha_prestamo` |
 | Montos | Siempre number, nunca string con formato | `500000` no `"$500.000"` |
@@ -214,26 +224,29 @@ Tag recomendado: `prestamos`. Naming: `[Préstamos] <descripción>`.
 ## Autonomía
 
 Claude opera con autonomía para:
-- Diseñar la estructura del código de la PWA
-- Crear workflows en n8n via MCP
-- Configurar hojas de Google Sheets (estructura y fórmulas)
-- Desplegar a Vercel
+- Modificar la PWA (index.html, sw.js, manifest.json)
+- Modificar el código Apps Script (dándoselo al usuario para que lo pegue en script.google.com — Claude no tiene acceso directo)
+- Actualizar configuración en Vercel o DNS vía guía al usuario
 
 **Preguntar solo cuando**:
 - Ambigüedad de UX que cambie el diseño de pantalla
-- Requiere datos del cliente final (nombre de app, logo)
+- Requiere datos del cliente final
 - Decisión con impacto económico (ej. cambiar de hosting pagado)
 
 ---
 
 ## Estado actual del proyecto
 
-**Fase**: diseño cerrado, listo para construir.
+**Fase**: en producción desde 2026-04-19. App entregable al cliente final.
 
-**Próximos pasos**:
-1. Crear Google Sheet con las 3 hojas (Deudores, Prestamos, Abonos) en la cuenta Google del desarrollador
-2. Construir los 4 workflows n8n (crear préstamo, registrar abono, listar activos, detalle)
-3. Construir la PWA con las 2 pantallas
-4. Desplegar a Vercel bajo `prestamos.crhist.dev`
-5. Probar end-to-end con datos de prueba
-6. Entregar al cliente para validación
+**Lo que existe**:
+- PWA en [prestamos.crhist.dev](https://prestamos.crhist.dev) (branded como "Contabilidad Mobile Solution")
+- Apps Script Web App activo (URL arriba)
+- Google Sheet con 4 hojas: Deudores, Prestamos, Abonos, Sessions
+- Backup diario automático configurado como trigger en Apps Script (3am hora Colombia)
+- Login con user/pass (`MobileSolution` / `1234`)
+
+**Pendientes (menores, no bloquean producción)**:
+- Limpieza periódica de tokens viejos en `Sessions` (crecen sin límite)
+- Monitoreo/alertas si el Apps Script cae (actualmente depende del usuario reportar)
+- Ver [memory/project_future_features.md](C:\Users\usuario\.claude\projects\c--Cursor-Prestamos\memory\project_future_features.md) para features premium diferidas
