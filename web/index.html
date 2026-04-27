@@ -193,6 +193,25 @@
                   style="flex:1;padding:0.6rem;border:none;border-radius:6px;font-size:0.85rem;font-weight:500;cursor:pointer;">Mensual</button>
               </div>
             </div>
+            <div class="form-group">
+              <label>Número de cuotas <span style="font-weight:400;color:#6B7280;">(opcional)</span></label>
+              <input type="number" x-model.number="form.num_pagos" placeholder="Ej: 4" min="1" inputmode="numeric">
+              <!-- Preview de cuota calculada -->
+              <div x-show="form.capital > 0 && form.num_pagos > 1"
+                style="margin-top:0.5rem;padding:0.6rem 0.75rem;background:#f0f7ff;border-radius:6px;border:1px solid #bfdbfe;">
+                <div style="font-size:0.7rem;text-transform:uppercase;color:#0D2B4F;font-weight:600;margin-bottom:0.2rem;">Cuota calculada</div>
+                <div style="font-size:0.95rem;font-weight:700;color:#0D2B4F;">
+                  <span x-text="formatCurrency(Math.round(form.capital / form.num_pagos))"></span>
+                  <span x-show="Number(form.interes_periodo) > 0" style="color:#92400e;">
+                    + <span x-text="formatCurrency(Number(form.interes_periodo))"></span> interés
+                    = <span x-text="formatCurrency(Math.round(form.capital / form.num_pagos) + Number(form.interes_periodo))"></span>
+                  </span>
+                  <span style="font-weight:400;color:#6B7280;font-size:0.8rem;margin-left:0.25rem;">
+                    × <span x-text="form.num_pagos"></span> cuotas
+                  </span>
+                </div>
+              </div>
+            </div>
             <button type="submit" class="btn-primary" :disabled="loading">
               <span x-show="!loading">Registrar Préstamo</span>
               <span x-show="loading">Guardando...</span>
@@ -314,6 +333,37 @@
                     </div>
                   </div>
 
+                  <!-- Plan de cuotas fijas -->
+                  <div x-show="prest.installmentInfo" style="margin-bottom:0.75rem;padding:0.75rem;background:white;border-radius:4px;border:1px solid #E5E7EB;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                      <div>
+                        <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.15rem;">Plan de cuotas</div>
+                        <div style="font-size:0.95rem;font-weight:700;color:#0D2B4F;" x-text="formatCurrency(prest.installmentInfo?.cuota_monto)"></div>
+                        <div style="font-size:0.75rem;color:#6B7280;margin-top:0.1rem;" x-show="prest.interes_periodo > 0">
+                          <span x-text="formatCurrency(prest.installmentInfo?.capital_por_cuota)"></span> capital +
+                          <span x-text="formatCurrency(prest.interes_periodo)"></span> interés
+                        </div>
+                      </div>
+                      <div style="text-align:right;">
+                        <div style="font-size:1.1rem;font-weight:700;color:#1A1A1A;">
+                          <span x-text="prest.installmentInfo?.pagadas"></span>/<span x-text="prest.installmentInfo?.total"></span>
+                        </div>
+                        <div style="font-size:0.7rem;color:#6B7280;">cuotas pagadas</div>
+                      </div>
+                    </div>
+                    <div class="cuota-bar">
+                      <template x-for="i in Math.min(prest.installmentInfo?.total || 0, 20)" :key="i">
+                        <div class="cuota-dot" :class="i <= (prest.installmentInfo?.pagadas || 0) ? 'pagada' : 'pendiente'"></div>
+                      </template>
+                      <span x-show="(prest.installmentInfo?.total || 0) > 20" style="font-size:0.7rem;color:#6B7280;align-self:center;">
+                        +<span x-text="prest.installmentInfo.total - 20"></span>
+                      </span>
+                    </div>
+                    <div style="font-size:0.75rem;color:#6B7280;margin-top:0.4rem;">
+                      <span x-text="prest.installmentInfo?.remaining"></span> cuota(s) restante(s)
+                    </div>
+                  </div>
+
                   <!-- Historial de pagos -->
                   <div x-show="prest.abonos && prest.abonos.length > 0" style="margin-bottom:0.75rem;">
                     <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.4rem;letter-spacing:0.5px;">
@@ -380,8 +430,8 @@
                   required>
               </div>
 
-              <!-- Preview de asignación automática -->
-              <div class="allocation-box" x-show="allocation && (allocation.interes > 0 || allocation.capital > 0)">
+              <!-- Preview de asignación automática (solo cuando hay split interés+capital) -->
+              <div class="allocation-box" x-show="allocation && allocation.interes > 0">
                 <div class="alloc-title">Distribución automática</div>
                 <div class="alloc-row" x-show="allocation?.interes > 0">
                   <span class="alloc-tipo">→ Interés del período</span>
@@ -447,7 +497,8 @@
           capital: '',
           interes_periodo: 0,
           fecha_prestamo: '',
-          frecuencia: 'semanal'
+          frecuencia: 'semanal',
+          num_pagos: ''
         },
         newPayment: { monto: '', fecha: '' },
 
@@ -594,8 +645,33 @@
           return { pagadas, total: periodsCompleted };
         },
 
+        getInstallmentInfo(prest) {
+          if (!prest.num_pagos || prest.num_pagos <= 0) return null;
+          const capital = prest.capital || 0;
+          const saldo = prest.saldo_capital ?? prest.saldo ?? 0;
+          const totalCapitalPaid = capital - saldo;
+          const capitalPorCuota = Math.round(capital / prest.num_pagos);
+          const cuota_monto = capitalPorCuota + (prest.interes_periodo || 0);
+          const pagadas = capitalPorCuota > 0
+            ? Math.min(Math.floor(totalCapitalPaid / capitalPorCuota), prest.num_pagos)
+            : 0;
+          return { cuota_monto, capital_por_cuota: capitalPorCuota, pagadas, total: prest.num_pagos, remaining: prest.num_pagos - pagadas };
+        },
+
         getNextPaymentDate(prest) {
-          if (!prest.interes_periodo || prest.interes_periodo <= 0) return null;
+          if (!prest.interes_periodo || prest.interes_periodo <= 0) {
+            // Préstamo en cuotas fijas
+            if (!prest.num_pagos || prest.num_pagos <= 0) return null;
+            const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
+            const days = intervals[prest.frecuencia] || 7;
+            const inicio = this.parseLocalDate(prest.fecha_prestamo);
+            if (!inicio) return null;
+            inicio.setHours(0, 0, 0, 0);
+            const info = prest.installmentInfo || this.getInstallmentInfo(prest);
+            const nextDue = new Date(inicio);
+            nextDue.setDate(nextDue.getDate() + ((info?.pagadas || 0) + 1) * days);
+            return nextDue;
+          }
           const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
           const days = intervals[prest.frecuencia] || 7;
 
@@ -662,10 +738,13 @@
         openAbono(prest) {
           this.selectedPrestamo = prest;
           this.showAbono = true;
-          this.newPayment.monto = '';
+          // Pre-llenar con la cuota si el préstamo tiene plan de cuotas
+          const cuota = prest.installmentInfo?.cuota_monto;
+          this.newPayment.monto = cuota || '';
           this.newPayment.fecha = this.getTodayDate();
           this.allocation = null;
           this.paymentMessage = null;
+          if (cuota) this.updateAllocation();
         },
 
         async loadLoans() {
@@ -685,6 +764,7 @@
               for (const prest of deudor.prestamos || []) {
                 prest.interestStatus = this.getInterestStatus(prest);
                 prest.cuotas = this.getCuotas(prest);
+                prest.installmentInfo = this.getInstallmentInfo(prest);
                 prest.paymentStatus = this.getPaymentStatus(this.getNextPaymentDate(prest));
               }
               deudor.paymentStatus = this.getPaymentStatus(this.getDeudorProximoPago(deudor));
@@ -738,14 +818,15 @@
                 capital: Number(this.form.capital),
                 interes_periodo: Number(this.form.interes_periodo) || 0,
                 fecha_prestamo: this.form.fecha_prestamo,
-                frecuencia: this.form.frecuencia || 'semanal'
+                frecuencia: this.form.frecuencia || 'semanal',
+                num_pagos: Number(this.form.num_pagos) || 0
               })
             });
             const data = await res.json();
             if (!data?.ok) throw new Error(data?.error || 'Error del servidor');
 
             this.message = { type: 'success', text: '✓ Préstamo registrado' };
-            this.form = { nombre: '', telefono: '', capital: '', interes_periodo: 0, fecha_prestamo: this.getTodayDate(), frecuencia: 'semanal' };
+            this.form = { nombre: '', telefono: '', capital: '', interes_periodo: 0, fecha_prestamo: this.getTodayDate(), frecuencia: 'semanal', num_pagos: '' };
             setTimeout(() => { this.loading = false; this.message = null; this.screen = 'active'; this.loadLoans(); }, 1500);
           } catch (e) {
             this.message = { type: 'error', text: 'No se pudo guardar: ' + e.message };
