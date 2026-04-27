@@ -526,31 +526,23 @@
           const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
           const days = intervals[prest.frecuencia] || 30;
 
+          const inicio = this.parseLocalDate(prest.fecha_prestamo);
+          if (!inicio) return { pendiente: true, lastPaid: null };
+          inicio.setHours(0, 0, 0, 0);
+
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const daysSince = Math.floor((today - inicio) / (1000 * 60 * 60 * 24));
+          const periodsElapsed = Math.floor(daysSince / days);
+          const required = periodsElapsed + 1; // período actual siempre genera interés
+
           const interestPayments = (prest.abonos || [])
             .filter(a => a.tipo === 'interes')
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-          let base;
-          if (interestPayments.length > 0) {
-            base = new Date(interestPayments[0].timestamp);
-            base.setHours(0, 0, 0, 0);
-          } else {
-            base = this.parseLocalDate(prest.fecha_prestamo);
-            if (base) base.setHours(0, 0, 0, 0);
-          }
-
-          if (!base) return { pendiente: true, lastPaid: null };
-
-          const nextDue = new Date(base);
-          nextDue.setDate(nextDue.getDate() + days);
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const diff = Math.floor((nextDue - today) / (1000 * 60 * 60 * 24));
-
           return {
-            pendiente: diff <= 0,
-            nextDue,
-            diff,
+            pendiente: interestPayments.length < required,
             lastPaid: interestPayments.length > 0 ? interestPayments[0].timestamp : null
           };
         },
@@ -568,7 +560,8 @@
           inicio.setHours(0, 0, 0, 0);
 
           const daysSince = Math.floor((today - inicio) / (1000 * 60 * 60 * 24));
-          const total = Math.max(0, Math.floor(daysSince / days));
+          const periodsElapsed = Math.floor(daysSince / days);
+          const total = periodsElapsed + 1; // período actual siempre cuenta
           const pagadas = (prest.abonos || []).filter(a => a.tipo === 'interes').length;
 
           return { pagadas, total };
