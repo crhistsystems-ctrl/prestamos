@@ -290,21 +290,24 @@
                   </div>
 
                   <!-- Cuotas de interés (solo si aplica interés) -->
-                  <div x-show="prest.interes_periodo > 0 && prest.cuotas" style="margin-bottom:0.75rem;">
+                  <div x-show="prest.interes_periodo > 0" style="margin-bottom:0.75rem;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
                       <div>
                         <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.15rem;">Cuotas de interés</div>
                         <div style="font-size:0.85rem;font-weight:600;color:#1A1A1A;">
-                          <span x-text="prest.cuotas?.pagadas"></span>/<span x-text="prest.cuotas?.total"></span> pagadas
-                          · <span style="color:#92400e;" x-text="formatCurrency(prest.interes_periodo)"></span> c/período
+                          <span x-show="prest.cuotas && prest.cuotas.total > 0">
+                            <span x-text="prest.cuotas?.pagadas"></span>/<span x-text="prest.cuotas?.total"></span> pagadas ·
+                          </span>
+                          <span style="color:#92400e;" x-text="formatCurrency(prest.interes_periodo)"></span> c/período
                         </div>
                       </div>
+                      <!-- Badge: "Pendiente" solo si el período ya venció sin pago; si es anticipado muestra "Al día" -->
                       <span class="pill"
-                        :style="prest.interestStatus?.pendiente ? 'background:#ffebee;color:#8B1E1E;' : 'background:#e8f5e9;color:#2D6A4F;'"
-                        x-text="prest.interestStatus?.pendiente ? 'Interés due' : 'Al día'"></span>
+                        :style="prest.interestStatus?.overdue ? 'background:#ffebee;color:#8B1E1E;' : 'background:#e8f5e9;color:#2D6A4F;'"
+                        x-text="prest.interestStatus?.overdue ? 'Pendiente' : 'Al día'"></span>
                     </div>
-                    <!-- Dot bar: each dot = one period -->
-                    <div class="cuota-bar">
+                    <!-- Dot bar: un punto por período completado -->
+                    <div class="cuota-bar" x-show="prest.cuotas && prest.cuotas.total > 0">
                       <template x-for="i in Math.min(prest.cuotas?.total || 0, 20)" :key="i">
                         <div class="cuota-dot" :class="i <= (prest.cuotas?.pagadas || 0) ? 'pagada' : 'pendiente'"></div>
                       </template>
@@ -527,23 +530,26 @@
           const days = intervals[prest.frecuencia] || 30;
 
           const inicio = this.parseLocalDate(prest.fecha_prestamo);
-          if (!inicio) return { pendiente: true, lastPaid: null };
+          if (!inicio) return { pendiente: false, overdue: false, lastPaid: null };
           inicio.setHours(0, 0, 0, 0);
 
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
           const daysSince = Math.floor((today - inicio) / (1000 * 60 * 60 * 24));
-          const periodsElapsed = Math.floor(daysSince / days);
-          const required = periodsElapsed + 1; // período actual siempre genera interés
+          const periodsCompleted = Math.floor(daysSince / days);
 
           const interestPayments = (prest.abonos || [])
             .filter(a => a.tipo === 'interes')
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          const paidCount = interestPayments.length;
 
           return {
-            pendiente: interestPayments.length < required,
-            lastPaid: interestPayments.length > 0 ? interestPayments[0].timestamp : null
+            // overdue: el período ya terminó y no se pagó → muestra badge "Pendiente" rojo
+            overdue: paidCount < periodsCompleted,
+            // pendiente: el interés tiene prioridad en cualquier pago (incluye pago anticipado)
+            pendiente: paidCount <= periodsCompleted,
+            lastPaid: paidCount > 0 ? interestPayments[0].timestamp : null
           };
         },
 
@@ -560,35 +566,27 @@
           inicio.setHours(0, 0, 0, 0);
 
           const daysSince = Math.floor((today - inicio) / (1000 * 60 * 60 * 24));
-          const periodsElapsed = Math.floor(daysSince / days);
-          const total = periodsElapsed + 1; // período actual siempre cuenta
-          const pagadas = (prest.abonos || []).filter(a => a.tipo === 'interes').length;
+          const periodsCompleted = Math.floor(daysSince / days);
+          const paidCount = (prest.abonos || []).filter(a => a.tipo === 'interes').length;
 
-          return { pagadas, total };
+          // Solo períodos ya completados (no el período en curso)
+          return { pagadas: Math.min(paidCount, periodsCompleted), total: periodsCompleted };
         },
 
         getNextPaymentDate(prest) {
+          if (!prest.interes_periodo || prest.interes_periodo <= 0) return null;
           const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
           const days = intervals[prest.frecuencia] || 7;
 
-          let base;
-          if (prest.interes_periodo > 0) {
-            const interestPayments = (prest.abonos || [])
-              .filter(a => a.tipo === 'interes')
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            if (interestPayments.length > 0) {
-              base = new Date(interestPayments[0].timestamp);
-              base.setHours(0, 0, 0, 0);
-            }
-          }
-          if (!base) {
-            base = this.parseLocalDate(prest.fecha_prestamo);
-            if (base) base.setHours(0, 0, 0, 0);
-          }
-          if (!base) return null;
-          const next = new Date(base);
-          next.setDate(next.getDate() + days);
-          return next;
+          const inicio = this.parseLocalDate(prest.fecha_prestamo);
+          if (!inicio) return null;
+          inicio.setHours(0, 0, 0, 0);
+
+          // Calendario fijo desde fecha_prestamo: próximo vencimiento = inicio + (pagadas+1) * días
+          const paidCount = (prest.abonos || []).filter(a => a.tipo === 'interes').length;
+          const nextDue = new Date(inicio);
+          nextDue.setDate(nextDue.getDate() + (paidCount + 1) * days);
+          return nextDue;
         },
 
         getDeudorProximoPago(deudor) {
