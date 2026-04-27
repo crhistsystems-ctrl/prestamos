@@ -18,76 +18,52 @@
     header {
       background: #0D2B4F; color: white;
       padding: 1.25rem 1.5rem;
-      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      display: flex; align-items: center; justify-content: space-between;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); }
     header .brand { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
-    header h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: 0.2px; }
-    header .brand small { font-size: 0.7rem; color: #3A8FD1; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+    header h1 { font-size: 1.05rem; font-weight: 600; }
+    header .brand small { font-size: 0.7rem; color: #3A8FD1; font-weight: 500; text-transform: uppercase; }
 
-    .tabs {
-      display: flex; border-bottom: 1px solid #E5E7EB; background: white;
-      position: sticky; top: 0; z-index: 10;
-    }
-    .tab {
-      flex: 1; padding: 1rem; text-align: center; cursor: pointer;
-      border-bottom: 3px solid transparent; color: #6B7280; font-weight: 500; transition: all 0.2s;
-    }
+    .tabs { display: flex; border-bottom: 1px solid #E5E7EB; background: white; position: sticky; top: 0; z-index: 10; }
+    .tab { flex: 1; padding: 1rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; color: #6B7280; font-weight: 500; transition: all 0.2s; }
     .tab.active { border-bottom-color: #3A8FD1; color: #0D2B4F; }
 
     .content { padding: 1.5rem; }
     .screen { display: none; }
     .screen.active { display: block; }
 
-    .form-group { margin-bottom: 1.5rem; }
-    label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #1A1A1A; }
-    input, select {
-      width: 100%; padding: 0.75rem; border: 1px solid #E5E7EB; border-radius: 4px;
-      font-size: 1rem; font-family: 'Inter', sans-serif;
-    }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; margin-bottom: 0.4rem; font-weight: 500; color: #1A1A1A; font-size: 0.9rem; }
+    input, select { width: 100%; padding: 0.75rem; border: 1px solid #E5E7EB; border-radius: 4px; font-size: 1rem; font-family: 'Inter', sans-serif; }
     input:focus, select:focus { outline: none; border-color: #3A8FD1; box-shadow: 0 0 0 3px rgba(58,143,209,0.15); }
 
-    button {
-      width: 100%; padding: 0.75rem; border: none; border-radius: 4px;
-      font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-    }
+    button { width: 100%; padding: 0.75rem; border: none; border-radius: 4px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background: #0D2B4F; color: white; }
     .btn-primary:hover { background: #071a33; }
-    .btn-primary:active { opacity: 0.9; }
     .btn-accent { background: #3A8FD1; color: white; }
     .btn-accent:hover { background: #2a7ab8; }
 
-    .loan-card {
-      border: 1px solid #E5E7EB; border-radius: 6px; padding: 1rem;
-      margin-bottom: 1rem; cursor: pointer; transition: all 0.2s;
-    }
+    .loan-card { border: 1px solid #E5E7EB; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s; }
     .loan-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
 
-    .loan-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; }
-    .loan-name { font-weight: 600; color: #1A1A1A; }
-
-    .loan-amounts {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-      padding-top: 0.75rem; border-top: 1px solid #E5E7EB;
-    }
+    .loan-amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-top: 0.75rem; border-top: 1px solid #E5E7EB; }
     .amount-box { text-align: center; }
-    .amount-label { font-size: 0.75rem; color: #6B7280; text-transform: uppercase; }
-    .amount-value { font-size: 1.25rem; font-weight: 700; color: #0D2B4F; }
+    .amount-label { font-size: 0.7rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.3px; }
+    .amount-value { font-size: 1.2rem; font-weight: 700; color: #0D2B4F; }
     .amount-value.accent { color: #3A8FD1; }
 
-    .detail-header { background: #FAFAFA; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
-    .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
+    .detail-header { background: #FAFAFA; padding: 1rem; border-radius: 6px; margin-bottom: 1.25rem; }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .detail-row:last-child { margin-bottom: 0; }
     .detail-label { color: #6B7280; font-size: 0.875rem; }
-    .detail-value { font-weight: 600; color: #1A1A1A; }
+    .detail-value { font-weight: 600; }
 
     .history { margin-bottom: 1.5rem; }
-    .history h3 { font-size: 0.875rem; text-transform: uppercase; color: #6B7280; margin-bottom: 0.75rem; }
+    .history h3 { font-size: 0.8rem; text-transform: uppercase; color: #6B7280; margin-bottom: 0.75rem; letter-spacing: 0.5px; font-weight: 600; }
 
-    .new-payment { border: 2px dashed #E5E7EB; padding: 1rem; border-radius: 6px; background: #FAFAFA; }
-    .new-payment h3 { font-size: 0.875rem; text-transform: uppercase; color: #6B7280; margin-bottom: 1rem; }
-
-    .alert { padding: 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.875rem; }
+    .alert { padding: 0.875rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.875rem; }
     .alert-success { background: #e8f5e9; color: #2D6A4F; border: 1px solid #c8e6c9; }
     .alert-error { background: #ffebee; color: #8B1E1E; border: 1px solid #ffcdd2; }
 
@@ -95,35 +71,39 @@
     .back-btn:hover { background: #d1d5db; }
 
     .empty-state { text-align: center; padding: 2rem 1rem; color: #6B7280; }
-    .empty-state p { font-size: 0.875rem; margin-bottom: 1rem; }
+    .empty-state p { font-size: 0.875rem; }
 
     .grand-total {
       background: linear-gradient(135deg, #0D2B4F 0%, #1a4472 100%);
       color: white; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem;
     }
-    .grand-total .label { font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.65); letter-spacing: 0.5px; margin-bottom: 0.25rem; }
-    .grand-total .value { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.15rem; }
-    .grand-total .sub { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+    .grand-total .gt-label { font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.65); letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+    .grand-total .gt-value { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.15rem; }
+    .grand-total .gt-sub { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
 
-    .num-badge {
-      width: 24px; height: 24px; background: #0D2B4F; color: white; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
-    }
+    .num-badge { width: 24px; height: 24px; background: #0D2B4F; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
 
-    .login-screen {
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      min-height: 100vh; background: linear-gradient(135deg, #0D2B4F 0%, #1a4d7a 100%); padding: 1.5rem;
+    .pill { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.45rem; border-radius: 10px; font-weight: 600; }
+
+    .allocation-box {
+      background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 6px;
+      padding: 0.875rem; margin-bottom: 1rem;
     }
-    .login-box {
-      background: white; border-radius: 8px; padding: 2rem;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15); width: 100%; max-width: 340px;
-    }
+    .allocation-box .alloc-title { font-size: 0.75rem; font-weight: 600; color: #0D2B4F; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.6rem; }
+    .alloc-row { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0; }
+    .alloc-row + .alloc-row { border-top: 1px dashed #bfdbfe; }
+    .alloc-tipo { font-size: 0.8rem; color: #374151; }
+    .alloc-monto { font-size: 0.9rem; font-weight: 700; }
+
+    .cuota-bar { display: flex; gap: 0.25rem; margin-top: 0.4rem; flex-wrap: wrap; }
+    .cuota-dot { width: 10px; height: 10px; border-radius: 50%; background: #E5E7EB; }
+    .cuota-dot.pagada { background: #2D6A4F; }
+    .cuota-dot.pendiente { background: #E5E7EB; border: 1px solid #9CA3AF; }
+
+    .login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #0D2B4F 0%, #1a4d7a 100%); padding: 1.5rem; }
+    .login-box { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); width: 100%; max-width: 340px; }
     .login-box h1 { font-size: 1.5rem; color: #0D2B4F; margin-bottom: 0.5rem; text-align: center; }
     .login-box .subtitle { text-align: center; color: #6B7280; font-size: 0.875rem; margin-bottom: 2rem; }
-    .login-box .form-group { margin-bottom: 1.25rem; }
-    .login-box label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #1A1A1A; font-size: 0.9rem; }
-    .login-box input { width: 100%; padding: 0.75rem; border: 1px solid #E5E7EB; border-radius: 4px; font-size: 1rem; font-family: 'Inter', sans-serif; }
-    .login-box input:focus { outline: none; border-color: #3A8FD1; box-shadow: 0 0 0 3px rgba(58,143,209,0.15); }
     .login-error { background: #ffebee; color: #8B1E1E; border: 1px solid #ffcdd2; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.85rem; }
   </style>
 </head>
@@ -159,13 +139,10 @@
         ⚠ Sin conexión a internet
       </div>
 
-      <header style="justify-content: space-between;">
+      <header>
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <img src="/icons/logo.jpeg" alt="Logo">
-          <div class="brand">
-            <h1>Contabilidad</h1>
-            <small>Mobile Solution</small>
-          </div>
+          <div class="brand"><h1>Contabilidad</h1><small>Mobile Solution</small></div>
         </div>
         <button @click="logout()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:0.5rem 1rem;border-radius:4px;font-size:0.75rem;cursor:pointer;font-weight:500;">Salir</button>
       </header>
@@ -180,9 +157,7 @@
         <!-- SCREEN 1: Nuevo Préstamo -->
         <div class="screen" :class="{ active: screen === 'new' }">
           <h2 style="margin-bottom:1.5rem;color:#0D2B4F;">Nuevo Préstamo</h2>
-
           <div x-show="message" :class="['alert', message?.type === 'success' ? 'alert-success' : 'alert-error']" x-text="message?.text || ''"></div>
-
           <form @submit.prevent="submitLoan()">
             <div class="form-group">
               <label>Nombre del deudor</label>
@@ -193,8 +168,12 @@
               <input type="tel" x-model="form.telefono" placeholder="Ej: 3012345678" maxlength="10" inputmode="numeric" required>
             </div>
             <div class="form-group">
-              <label>Monto total (capital + intereses)</label>
-              <input type="number" x-model.number="form.monto_total" placeholder="Ej: 500000" min="1" required>
+              <label>Capital prestado</label>
+              <input type="number" x-model.number="form.capital" placeholder="Ej: 1000000" min="1" required>
+            </div>
+            <div class="form-group">
+              <label>Interés por período <span style="font-weight:400;color:#6B7280;">(0 si no aplica)</span></label>
+              <input type="number" x-model.number="form.interes_periodo" placeholder="Ej: 100000" min="0">
             </div>
             <div class="form-group">
               <label>Fecha del préstamo</label>
@@ -224,43 +203,38 @@
         <!-- SCREEN 2: Deudores Activos -->
         <div class="screen" :class="{ active: screen === 'active' }">
 
-          <!-- Lista de deudores -->
+          <!-- Lista -->
           <div x-show="!selectedLoan && !showAbono">
             <h2 style="margin-bottom:1rem;color:#0D2B4F;">Deudores Activos</h2>
 
             <div x-show="loansError" class="alert alert-error">
-              No se pudo cargar la lista. <a href="#" @click.prevent="loadLoans()" style="color:#8B1E1E;text-decoration:underline;font-weight:600;">Reintentar</a>
+              No se pudo cargar. <a href="#" @click.prevent="loadLoans()" style="color:#8B1E1E;text-decoration:underline;font-weight:600;">Reintentar</a>
             </div>
-
             <div x-show="!loansLoaded && !loansError" class="empty-state"><p>Cargando...</p></div>
 
             <div x-show="loansLoaded && !loansError">
-              <!-- Grand total -->
               <div class="grand-total" x-show="loans.length > 0">
-                <div class="label">Total cartera activa</div>
-                <div class="value" x-text="formatCurrency(grandTotal)"></div>
-                <div class="sub" x-text="loans.length + (loans.length === 1 ? ' deudor activo' : ' deudores activos')"></div>
+                <div class="gt-label">Total cartera activa</div>
+                <div class="gt-value" x-text="formatCurrency(grandTotal)"></div>
+                <div class="gt-sub" x-text="loans.length + (loans.length === 1 ? ' deudor activo' : ' deudores activos')"></div>
               </div>
-
               <div x-show="loans.length === 0" class="empty-state"><p>No hay deudores activos.</p></div>
 
               <template x-for="(deudor, index) in loans" :key="deudor.deudor_id">
                 <div class="loan-card" @click="selectedLoan = deudor"
-                  :style="deudor.paymentStatus?.urgent ? 'border-left: 3px solid #8B1E1E;' : ''">
-                  <div class="loan-header">
-                    <div style="display:flex;align-items:center;gap:0.6rem;flex:1;">
-                      <span class="num-badge" x-text="index + 1"></span>
-                      <div style="flex:1;">
-                        <div class="loan-name" x-text="deudor.nombre"></div>
-                        <span x-show="deudor.paymentStatus?.label"
-                          :style="`font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:10px;font-weight:600;background:${deudor.paymentStatus?.bg};color:${deudor.paymentStatus?.color};`"
-                          x-text="deudor.paymentStatus?.label"></span>
-                      </div>
+                  :style="deudor.paymentStatus?.urgent ? 'border-left:3px solid #8B1E1E;' : ''">
+                  <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
+                    <span class="num-badge" x-text="index + 1"></span>
+                    <div style="flex:1;">
+                      <div style="font-weight:600;color:#1A1A1A;" x-text="deudor.nombre"></div>
+                      <span x-show="deudor.paymentStatus?.label"
+                        :style="`font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:10px;font-weight:600;background:${deudor.paymentStatus?.bg};color:${deudor.paymentStatus?.color};`"
+                        x-text="deudor.paymentStatus?.label"></span>
                     </div>
                   </div>
                   <div class="loan-amounts">
                     <div class="amount-box">
-                      <div class="amount-label">Saldo total</div>
+                      <div class="amount-label">Capital activo</div>
                       <div class="amount-value accent" x-text="formatCurrency(deudor.saldo)"></div>
                     </div>
                     <div class="amount-box">
@@ -280,10 +254,10 @@
 
             <div class="detail-header">
               <div class="detail-row">
-                <span class="detail-label">Saldo total</span>
+                <span class="detail-label">Capital total activo</span>
                 <span class="detail-value" style="color:#3A8FD1;" x-text="formatCurrency(selectedLoan?.saldo)"></span>
               </div>
-              <div class="detail-row" style="margin-bottom:0;">
+              <div class="detail-row">
                 <span class="detail-label">Préstamos activos</span>
                 <span class="detail-value" x-text="selectedLoan?.prestamos?.length"></span>
               </div>
@@ -292,84 +266,144 @@
             <div class="history">
               <h3>Préstamos</h3>
               <template x-for="prest in selectedLoan?.prestamos" :key="prest.prestamo_id">
-                <div style="padding:1rem;background:#FAFAFA;border-radius:4px;margin-bottom:0.75rem;border-left:3px solid #3A8FD1;">
+                <div style="padding:1rem;background:#FAFAFA;border-radius:6px;margin-bottom:1rem;border-left:3px solid #3A8FD1;">
 
-                  <!-- Monto y saldo -->
-                  <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-                    <span style="font-weight:500;color:#1A1A1A;" x-text="formatCurrency(prest.monto_total)"></span>
-                    <span style="color:#3A8FD1;font-weight:700;" x-text="formatCurrency(prest.saldo)"></span>
+                  <!-- Capital header -->
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                    <div>
+                      <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.15rem;">Capital</div>
+                      <div style="font-weight:700;font-size:1.1rem;color:#1A1A1A;" x-text="formatCurrency(prest.capital || prest.monto_total)"></div>
+                    </div>
+                    <div style="text-align:right;">
+                      <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.15rem;">Saldo capital</div>
+                      <div style="font-weight:700;font-size:1.1rem;color:#3A8FD1;" x-text="formatCurrency(prest.saldo_capital ?? prest.saldo)"></div>
+                    </div>
                   </div>
 
-                  <!-- Fecha + frecuencia + próximo pago -->
+                  <!-- Fecha + frecuencia + estado -->
                   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;margin-bottom:0.75rem;">
                     <span style="font-size:0.8rem;color:#6B7280;" x-text="formatDate(prest.fecha_prestamo)"></span>
-                    <span x-show="prest.frecuencia"
-                      style="font-size:0.7rem;background:#E8F0FE;color:#0D2B4F;padding:0.15rem 0.45rem;border-radius:10px;font-weight:600;text-transform:capitalize;"
-                      x-text="prest.frecuencia"></span>
-                    <span x-show="prest.paymentStatus?.label"
-                      :style="`font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:10px;font-weight:600;background:${prest.paymentStatus?.bg};color:${prest.paymentStatus?.color};`"
+                    <span x-show="prest.frecuencia" class="pill" style="background:#E8F0FE;color:#0D2B4F;text-transform:capitalize;" x-text="prest.frecuencia"></span>
+                    <span x-show="prest.paymentStatus?.label" class="pill"
+                      :style="`background:${prest.paymentStatus?.bg};color:${prest.paymentStatus?.color};`"
                       x-text="prest.paymentStatus?.label"></span>
                   </div>
 
-                  <!-- Abonos -->
-                  <div x-show="prest.abonos && prest.abonos.length > 0" style="margin-bottom:0.75rem;padding-top:0.75rem;border-top:1px solid #E5E7EB;">
-                    <div style="font-size:0.7rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.5rem;letter-spacing:0.5px;">
-                      Abonos (<span x-text="prest.abonos.length"></span>)
+                  <!-- Cuotas de interés (solo si aplica interés) -->
+                  <div x-show="prest.interes_periodo > 0 && prest.cuotas" style="margin-bottom:0.75rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+                      <div>
+                        <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.15rem;">Cuotas de interés</div>
+                        <div style="font-size:0.85rem;font-weight:600;color:#1A1A1A;">
+                          <span x-text="prest.cuotas?.pagadas"></span>/<span x-text="prest.cuotas?.total"></span> pagadas
+                          · <span style="color:#92400e;" x-text="formatCurrency(prest.interes_periodo)"></span> c/período
+                        </div>
+                      </div>
+                      <span class="pill"
+                        :style="prest.interestStatus?.pendiente ? 'background:#ffebee;color:#8B1E1E;' : 'background:#e8f5e9;color:#2D6A4F;'"
+                        x-text="prest.interestStatus?.pendiente ? 'Interés due' : 'Al día'"></span>
+                    </div>
+                    <!-- Dot bar: each dot = one period -->
+                    <div class="cuota-bar">
+                      <template x-for="i in Math.min(prest.cuotas?.total || 0, 20)" :key="i">
+                        <div class="cuota-dot" :class="i <= (prest.cuotas?.pagadas || 0) ? 'pagada' : 'pendiente'"></div>
+                      </template>
+                      <span x-show="(prest.cuotas?.total || 0) > 20" style="font-size:0.7rem;color:#6B7280;align-self:center;">+<span x-text="prest.cuotas.total - 20"></span></span>
+                    </div>
+                  </div>
+
+                  <!-- Historial de pagos -->
+                  <div x-show="prest.abonos && prest.abonos.length > 0" style="margin-bottom:0.75rem;">
+                    <div style="font-size:0.65rem;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:0.4rem;letter-spacing:0.5px;">
+                      Historial (<span x-text="prest.abonos.length"></span>)
                     </div>
                     <template x-for="(abono, idx) in [...prest.abonos].reverse()" :key="idx">
-                      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:white;border-radius:3px;margin-bottom:0.25rem;font-size:0.8rem;">
-                        <span style="color:#6B7280;" x-text="formatDateTime(abono.timestamp)"></span>
-                        <span style="font-weight:600;color:#2D6A4F;" x-text="'+ ' + formatCurrency(abono.monto)"></span>
+                      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:white;border-radius:3px;margin-bottom:0.2rem;font-size:0.8rem;">
+                        <div style="display:flex;align-items:center;gap:0.4rem;">
+                          <span style="color:#6B7280;" x-text="formatDateTime(abono.timestamp)"></span>
+                          <span class="pill"
+                            :style="`background:${abono.tipo === 'interes' ? '#fef3c7' : '#E8F0FE'};color:${abono.tipo === 'interes' ? '#92400e' : '#0D2B4F'};`"
+                            x-text="abono.tipo === 'interes' ? 'Interés' : 'Capital'"></span>
+                        </div>
+                        <span :style="`font-weight:600;color:${abono.tipo === 'interes' ? '#92400e' : '#2D6A4F'};`"
+                          x-text="'+ ' + formatCurrency(abono.monto)"></span>
                       </div>
                     </template>
                   </div>
 
-                  <button class="btn-accent" style="width:100%;padding:0.5rem;"
-                    @click="selectedPrestamo = prest; showAbono = true; newPayment.monto = ''; newPayment.fecha = getTodayDate()">
-                    Abonar
+                  <!-- Botón único de pago -->
+                  <button class="btn-accent" style="padding:0.6rem;font-size:0.9rem;"
+                    @click="openAbono(prest)">
+                    Registrar Pago
                   </button>
                 </div>
               </template>
             </div>
           </div>
 
-          <!-- Formulario de abono -->
+          <!-- Formulario de pago (único, con auto-asignación) -->
           <div x-show="showAbono && selectedPrestamo">
-            <button class="back-btn" @click="showAbono = false; selectedPrestamo = null">← Atrás</button>
-            <h2 style="margin-bottom:0.25rem;color:#0D2B4F;">Registrar Abono</h2>
-            <p style="margin-bottom:1rem;color:#6B7280;font-size:0.95rem;">
-              Abonando a <strong style="color:#1A1A1A;" x-text="selectedLoan?.nombre"></strong>
+            <button class="back-btn" @click="showAbono = false; selectedPrestamo = null; newPayment.monto = ''">← Atrás</button>
+
+            <h2 style="margin-bottom:0.25rem;color:#0D2B4F;">Registrar Pago</h2>
+            <p style="margin-bottom:1.25rem;color:#6B7280;font-size:0.95rem;">
+              <strong style="color:#1A1A1A;" x-text="selectedLoan?.nombre"></strong>
             </p>
 
+            <!-- Resumen del préstamo -->
             <div class="detail-header">
-              <div class="detail-row" style="margin-bottom:0;">
-                <span class="detail-label">Saldo pendiente</span>
-                <span style="font-weight:600;color:#3A8FD1;" x-text="formatCurrency(selectedPrestamo?.saldo)"></span>
+              <div class="detail-row">
+                <span class="detail-label">Saldo capital</span>
+                <span class="detail-value" style="color:#3A8FD1;" x-text="formatCurrency(selectedPrestamo?.saldo_capital ?? selectedPrestamo?.saldo)"></span>
+              </div>
+              <div class="detail-row" x-show="selectedPrestamo?.interes_periodo > 0">
+                <span class="detail-label">Interés del período</span>
+                <span class="detail-value" style="color:#92400e;" x-text="formatCurrency(selectedPrestamo?.interes_periodo)"></span>
+              </div>
+              <div class="detail-row" x-show="selectedPrestamo?.interes_periodo > 0" style="margin-bottom:0;">
+                <span class="detail-label">Estado interés</span>
+                <span :style="selectedPrestamo?.interestStatus?.pendiente ? 'color:#8B1E1E;font-weight:600;font-size:0.875rem;' : 'color:#2D6A4F;font-weight:600;font-size:0.875rem;'"
+                  x-text="selectedPrestamo?.interestStatus?.pendiente ? 'Pendiente' : 'Al día'"></span>
               </div>
             </div>
 
-            <div class="new-payment">
-              <div x-show="paymentMessage" :class="['alert', paymentMessage?.type === 'success' ? 'alert-success' : 'alert-error']" x-text="paymentMessage?.text || ''"></div>
-              <form @submit.prevent="submitPayment()">
-                <div class="form-group">
-                  <label>Monto del abono</label>
-                  <input type="number" x-model.number="newPayment.monto"
-                    :placeholder="'Máximo: ' + formatCurrency(selectedPrestamo?.saldo)"
-                    min="1" :max="selectedPrestamo?.saldo" required>
-                  <p style="font-size:0.8rem;color:#6B7280;margin-top:0.25rem;">
-                    Saldo disponible: <span x-text="formatCurrency(selectedPrestamo?.saldo)"></span>
-                  </p>
+            <div x-show="paymentMessage" :class="['alert', paymentMessage?.type === 'success' ? 'alert-success' : 'alert-error']" x-text="paymentMessage?.text || ''"></div>
+
+            <form @submit.prevent="submitPayment()">
+              <div class="form-group">
+                <label>Monto del pago</label>
+                <input type="number" x-model.number="newPayment.monto"
+                  placeholder="Ingresa el monto" min="1"
+                  @input="updateAllocation()"
+                  required>
+              </div>
+
+              <!-- Preview de asignación automática -->
+              <div class="allocation-box" x-show="allocation && (allocation.interes > 0 || allocation.capital > 0)">
+                <div class="alloc-title">Distribución automática</div>
+                <div class="alloc-row" x-show="allocation?.interes > 0">
+                  <span class="alloc-tipo">→ Interés del período</span>
+                  <span class="alloc-monto" style="color:#92400e;" x-text="formatCurrency(allocation?.interes)"></span>
                 </div>
-                <div class="form-group">
-                  <label>Fecha del abono</label>
-                  <input type="date" x-model="newPayment.fecha" required>
+                <div class="alloc-row" x-show="allocation?.capital > 0">
+                  <span class="alloc-tipo">→ Abono a capital</span>
+                  <span class="alloc-monto" style="color:#2D6A4F;" x-text="formatCurrency(allocation?.capital)"></span>
                 </div>
-                <button type="submit" class="btn-primary" :disabled="paymentLoading">
-                  <span x-show="!paymentLoading">✓ Guardar abono</span>
-                  <span x-show="paymentLoading">Guardando...</span>
-                </button>
-              </form>
-            </div>
+                <div class="alloc-row" x-show="allocation?.exceso > 0" style="border-top:1px dashed #fbbf24;">
+                  <span class="alloc-tipo" style="color:#92400e;">⚠ Excede saldo</span>
+                  <span class="alloc-monto" style="color:#92400e;" x-text="'−' + formatCurrency(allocation?.exceso)"></span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Fecha del pago</label>
+                <input type="date" x-model="newPayment.fecha" required>
+              </div>
+              <button type="submit" class="btn-primary" :disabled="paymentLoading || (allocation && allocation.exceso > 0)">
+                <span x-show="!paymentLoading">✓ Confirmar pago</span>
+                <span x-show="paymentLoading">Guardando...</span>
+              </button>
+            </form>
           </div>
 
         </div>
@@ -402,12 +436,14 @@
         paymentLoading: false,
         message: null,
         paymentMessage: null,
+        allocation: null,
         online: navigator.onLine,
 
         form: {
           nombre: '',
           telefono: '',
-          monto_total: '',
+          capital: '',
+          interes_periodo: 0,
           fecha_prestamo: '',
           frecuencia: 'semanal'
         },
@@ -425,16 +461,12 @@
         },
 
         async login() {
-          if (!this.loginForm.username || !this.loginForm.password) {
-            this.loginError = 'Completa usuario y contraseña';
-            return;
-          }
+          if (!this.loginForm.username || !this.loginForm.password) { this.loginError = 'Completa usuario y contraseña'; return; }
           this.loginLoading = true;
           this.loginError = '';
           try {
             const url = `${this.appsScriptUrl}?action=login&username=${encodeURIComponent(this.loginForm.username)}&password=${encodeURIComponent(this.loginForm.password)}`;
-            const res = await fetch(url);
-            const data = await res.json();
+            const data = await (await fetch(url)).json();
             if (data.ok && data.token) {
               this.token = data.token;
               localStorage.setItem('prestamos_token', this.token);
@@ -459,18 +491,13 @@
           }
         },
 
-        getTodayDate() {
-          return new Date().toISOString().split('T')[0];
-        },
+        getTodayDate() { return new Date().toISOString().split('T')[0]; },
 
         parseLocalDate(dateStr) {
           if (!dateStr) return null;
           if (dateStr instanceof Date) return dateStr;
           const s = String(dateStr);
-          if (s.includes('T')) {
-            const d = new Date(s);
-            return isNaN(d.getTime()) ? null : d;
-          }
+          if (s.includes('T')) { const d = new Date(s); return isNaN(d.getTime()) ? null : d; }
           const parts = s.split('-').map(Number);
           if (parts.length !== 3 || parts.some(isNaN)) return null;
           return new Date(parts[0], parts[1] - 1, parts[2]);
@@ -486,11 +513,7 @@
           if (!isoStr) return '-';
           const d = new Date(isoStr);
           if (isNaN(d.getTime())) return '-';
-          return d.toLocaleString('es-CO', {
-            timeZone: 'America/Bogota',
-            day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', hour12: true
-          });
+          return d.toLocaleString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
         },
 
         formatCurrency(num) {
@@ -498,20 +521,77 @@
           return '$' + Math.round(num).toLocaleString('es-CO');
         },
 
-        getNextPaymentDate(prest) {
+        getInterestStatus(prest) {
+          if (!prest.interes_periodo || prest.interes_periodo <= 0) return null;
           const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
-          const days = intervals[prest.frecuencia] || 7;
+          const days = intervals[prest.frecuencia] || 30;
+
+          const interestPayments = (prest.abonos || [])
+            .filter(a => a.tipo === 'interes')
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
           let base;
-          if (prest.abonos && prest.abonos.length > 0) {
-            const sorted = [...prest.abonos].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            base = new Date(sorted[0].timestamp);
+          if (interestPayments.length > 0) {
+            base = new Date(interestPayments[0].timestamp);
             base.setHours(0, 0, 0, 0);
           } else {
             base = this.parseLocalDate(prest.fecha_prestamo);
             if (base) base.setHours(0, 0, 0, 0);
           }
 
+          if (!base) return { pendiente: true, lastPaid: null };
+
+          const nextDue = new Date(base);
+          nextDue.setDate(nextDue.getDate() + days);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const diff = Math.floor((nextDue - today) / (1000 * 60 * 60 * 24));
+
+          return {
+            pendiente: diff <= 0,
+            nextDue,
+            diff,
+            lastPaid: interestPayments.length > 0 ? interestPayments[0].timestamp : null
+          };
+        },
+
+        getCuotas(prest) {
+          if (!prest.interes_periodo || prest.interes_periodo <= 0) return null;
+          const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
+          const days = intervals[prest.frecuencia] || 30;
+
+          const inicio = this.parseLocalDate(prest.fecha_prestamo);
+          if (!inicio) return null;
+
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          inicio.setHours(0, 0, 0, 0);
+
+          const daysSince = Math.floor((today - inicio) / (1000 * 60 * 60 * 24));
+          const total = Math.max(0, Math.floor(daysSince / days));
+          const pagadas = (prest.abonos || []).filter(a => a.tipo === 'interes').length;
+
+          return { pagadas, total };
+        },
+
+        getNextPaymentDate(prest) {
+          const intervals = { semanal: 7, quincenal: 15, mensual: 30 };
+          const days = intervals[prest.frecuencia] || 7;
+
+          let base;
+          if (prest.interes_periodo > 0) {
+            const interestPayments = (prest.abonos || [])
+              .filter(a => a.tipo === 'interes')
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            if (interestPayments.length > 0) {
+              base = new Date(interestPayments[0].timestamp);
+              base.setHours(0, 0, 0, 0);
+            }
+          }
+          if (!base) {
+            base = this.parseLocalDate(prest.fecha_prestamo);
+            if (base) base.setHours(0, 0, 0, 0);
+          }
           if (!base) return null;
           const next = new Date(base);
           next.setDate(next.getDate() + days);
@@ -519,7 +599,7 @@
         },
 
         getDeudorProximoPago(deudor) {
-          if (!deudor.prestamos || !deudor.prestamos.length) return null;
+          if (!deudor.prestamos?.length) return null;
           let earliest = null;
           for (const prest of deudor.prestamos) {
             const next = this.getNextPaymentDate(prest);
@@ -533,11 +613,41 @@
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const diff = Math.floor((nextDate - today) / (1000 * 60 * 60 * 24));
-
           if (diff < 0)  return { label: `Vencido ${Math.abs(diff)}d`, bg: '#ffebee', color: '#8B1E1E', urgent: true };
           if (diff === 0) return { label: '¡Paga hoy!', bg: '#ffebee', color: '#8B1E1E', urgent: true };
           if (diff <= 2)  return { label: `Vence en ${diff}d`, bg: '#fef3c7', color: '#92400e', urgent: false };
           return { label: `Próx. pago: ${diff}d`, bg: '#e8f5e9', color: '#2D6A4F', urgent: false };
+        },
+
+        updateAllocation() {
+          const monto = Number(this.newPayment.monto);
+          const prest = this.selectedPrestamo;
+          if (!monto || !prest || monto <= 0) { this.allocation = null; return; }
+
+          const result = { interes: 0, capital: 0, exceso: 0 };
+          let remaining = monto;
+
+          if (prest.interes_periodo > 0 && prest.interestStatus?.pendiente) {
+            result.interes = Math.min(remaining, prest.interes_periodo);
+            remaining -= result.interes;
+          }
+
+          const saldoCap = prest.saldo_capital ?? prest.saldo ?? 0;
+          if (remaining > 0) {
+            result.capital = Math.min(remaining, saldoCap);
+            result.exceso = Math.max(0, remaining - saldoCap);
+          }
+
+          this.allocation = result;
+        },
+
+        openAbono(prest) {
+          this.selectedPrestamo = prest;
+          this.showAbono = true;
+          this.newPayment.monto = '';
+          this.newPayment.fecha = this.getTodayDate();
+          this.allocation = null;
+          this.paymentMessage = null;
         },
 
         async loadLoans() {
@@ -546,31 +656,25 @@
           try {
             const res = await fetch(`${this.appsScriptUrl}?action=deudores_activos&token=${encodeURIComponent(this.token)}`);
             const data = await res.json();
-            if (data && data.error) {
-              if (data.code === 401) {
-                this.authenticated = false;
-                localStorage.removeItem('prestamos_token');
-              }
+            if (data?.error) {
+              if (data.code === 401) { this.authenticated = false; localStorage.removeItem('prestamos_token'); }
               throw new Error(data.error);
             }
 
             let list = Array.isArray(data) ? data : [];
 
-            // Calcular próximo pago y status por prestamo y por deudor
             for (const deudor of list) {
               for (const prest of deudor.prestamos || []) {
-                const next = this.getNextPaymentDate(prest);
-                prest.paymentStatus = this.getPaymentStatus(next);
+                prest.interestStatus = this.getInterestStatus(prest);
+                prest.cuotas = this.getCuotas(prest);
+                prest.paymentStatus = this.getPaymentStatus(this.getNextPaymentDate(prest));
               }
-              const proximoPago = this.getDeudorProximoPago(deudor);
-              deudor.paymentStatus = this.getPaymentStatus(proximoPago);
-              deudor._proximoPago = proximoPago;
+              deudor.paymentStatus = this.getPaymentStatus(this.getDeudorProximoPago(deudor));
+              deudor._proximoPago = this.getDeudorProximoPago(deudor);
             }
 
-            // Ordenar por urgencia (más próximo primero)
             list.sort((a, b) => {
-              const pa = a._proximoPago;
-              const pb = b._proximoPago;
+              const pa = a._proximoPago, pb = b._proximoPago;
               if (!pa && !pb) return 0;
               if (!pa) return 1;
               if (!pb) return -1;
@@ -581,7 +685,7 @@
             this.grandTotal = list.reduce((sum, d) => sum + (d.saldo || 0), 0);
             this.loansLoaded = true;
           } catch (e) {
-            console.error('Error loading loans:', e);
+            console.error(e);
             this.loans = [];
             this.loansError = true;
             this.loansLoaded = true;
@@ -589,22 +693,18 @@
         },
 
         async submitLoan() {
-          if (!this.form.nombre?.trim() || !this.form.telefono || !this.form.monto_total || !this.form.fecha_prestamo) {
-            this.message = { type: 'error', text: 'Completa todos los campos' };
-            return;
+          if (!this.form.nombre?.trim() || !this.form.telefono || !this.form.capital || !this.form.fecha_prestamo) {
+            this.message = { type: 'error', text: 'Completa todos los campos' }; return;
           }
-          if (Number(this.form.monto_total) <= 0) {
-            this.message = { type: 'error', text: 'El monto debe ser mayor a 0' };
-            return;
+          if (Number(this.form.capital) <= 0) {
+            this.message = { type: 'error', text: 'El capital debe ser mayor a 0' }; return;
           }
           const telDigits = String(this.form.telefono).replace(/\D/g, '');
           if (telDigits.length < 7) {
-            this.message = { type: 'error', text: 'El teléfono debe tener al menos 7 dígitos' };
-            return;
+            this.message = { type: 'error', text: 'Teléfono inválido' }; return;
           }
           if (!navigator.onLine) {
-            this.message = { type: 'error', text: 'Sin conexión. Revisa tu internet.' };
-            return;
+            this.message = { type: 'error', text: 'Sin conexión.' }; return;
           }
 
           this.loading = true;
@@ -617,22 +717,18 @@
                 token: this.token,
                 nombre: this.form.nombre.trim(),
                 telefono: this.form.telefono,
-                monto_total: Number(this.form.monto_total),
+                capital: Number(this.form.capital),
+                interes_periodo: Number(this.form.interes_periodo) || 0,
                 fecha_prestamo: this.form.fecha_prestamo,
                 frecuencia: this.form.frecuencia || 'semanal'
               })
             });
             const data = await res.json();
-            if (!data || !data.ok) throw new Error(data?.error || 'Error del servidor');
+            if (!data?.ok) throw new Error(data?.error || 'Error del servidor');
 
             this.message = { type: 'success', text: '✓ Préstamo registrado' };
-            this.form = { nombre: '', telefono: '', monto_total: '', fecha_prestamo: this.getTodayDate(), frecuencia: 'semanal' };
-            setTimeout(() => {
-              this.loading = false;
-              this.message = null;
-              this.screen = 'active';
-              this.loadLoans();
-            }, 1500);
+            this.form = { nombre: '', telefono: '', capital: '', interes_periodo: 0, fecha_prestamo: this.getTodayDate(), frecuencia: 'semanal' };
+            setTimeout(() => { this.loading = false; this.message = null; this.screen = 'active'; this.loadLoans(); }, 1500);
           } catch (e) {
             this.message = { type: 'error', text: 'No se pudo guardar: ' + e.message };
             this.loading = false;
@@ -640,21 +736,18 @@
         },
 
         async submitPayment() {
-          if (!this.newPayment.monto || !this.newPayment.fecha || !this.selectedPrestamo) {
-            this.paymentMessage = { type: 'error', text: 'Completa todos los campos' };
-            return;
+          const monto = Number(this.newPayment.monto);
+          if (!monto || !this.newPayment.fecha || !this.selectedPrestamo) {
+            this.paymentMessage = { type: 'error', text: 'Completa todos los campos' }; return;
           }
-          if (Number(this.newPayment.monto) <= 0) {
-            this.paymentMessage = { type: 'error', text: 'El monto debe ser mayor a 0' };
-            return;
+          if (monto <= 0) {
+            this.paymentMessage = { type: 'error', text: 'El monto debe ser mayor a 0' }; return;
           }
-          if (Number(this.newPayment.monto) > Number(this.selectedPrestamo.saldo)) {
-            this.paymentMessage = { type: 'error', text: `El abono excede el saldo (${this.formatCurrency(this.selectedPrestamo.saldo)})` };
-            return;
+          if (this.allocation?.exceso > 0) {
+            this.paymentMessage = { type: 'error', text: 'El monto excede el saldo pendiente' }; return;
           }
           if (!navigator.onLine) {
-            this.paymentMessage = { type: 'error', text: 'Sin conexión. Revisa tu internet.' };
-            return;
+            this.paymentMessage = { type: 'error', text: 'Sin conexión.' }; return;
           }
 
           this.paymentLoading = true;
@@ -663,18 +756,22 @@
             const res = await fetch(this.appsScriptUrl, {
               method: 'POST',
               body: JSON.stringify({
-                action: 'registrar_abono',
+                action: 'registrar_pago',
                 token: this.token,
                 prestamo_id: this.selectedPrestamo.prestamo_id,
-                monto: Number(this.newPayment.monto),
+                monto,
                 fecha: this.newPayment.fecha
               })
             });
             const data = await res.json();
-            if (!data || !data.ok) throw new Error(data?.error || 'Error del servidor');
+            if (!data?.ok) throw new Error(data?.error || 'Error del servidor');
 
-            this.paymentMessage = { type: 'success', text: `✓ Abono registrado: ${this.formatCurrency(this.newPayment.monto)}` };
+            const parts = (data.applied || []).map(a =>
+              `${a.tipo === 'interes' ? 'Interés' : 'Capital'}: ${this.formatCurrency(a.monto)}`
+            ).join(' · ');
+            this.paymentMessage = { type: 'success', text: `✓ Pago registrado${parts ? ' — ' + parts : ''}` };
             this.newPayment = { monto: '', fecha: this.getTodayDate() };
+            this.allocation = null;
             setTimeout(() => {
               this.paymentLoading = false;
               this.showAbono = false;
@@ -682,7 +779,7 @@
               this.selectedLoan = null;
               this.paymentMessage = null;
               this.loadLoans();
-            }, 1200);
+            }, 1500);
           } catch (e) {
             this.paymentMessage = { type: 'error', text: 'No se pudo guardar: ' + e.message };
             this.paymentLoading = false;
