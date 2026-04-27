@@ -603,13 +603,28 @@
           if (!inicio) return null;
           inicio.setHours(0, 0, 0, 0);
 
-          // Cuotas completas pagadas (por monto, no por cantidad de abonos)
-          const totalPaid = (prest.abonos || [])
+          // Calendario rodante: el próximo vencimiento es días días desde
+          // la fecha en que se completó el último período, no desde el inicio fijo.
+          // Así el máximo siempre es exactamente `days` días.
+          const interestPayments = (prest.abonos || [])
             .filter(a => a.tipo === 'interes')
-            .reduce((s, a) => s + Number(a.monto), 0);
-          const fullPeriodsPaid = Math.floor(totalPaid / prest.interes_periodo);
-          const nextDue = new Date(inicio);
-          nextDue.setDate(nextDue.getDate() + (fullPeriodsPaid + 1) * days);
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+          let accumulated = 0;
+          let lastCompleteDate = null;
+          for (const p of interestPayments) {
+            const before = Math.floor(accumulated / prest.interes_periodo);
+            accumulated += Number(p.monto);
+            if (Math.floor(accumulated / prest.interes_periodo) > before) {
+              const d = new Date(p.timestamp);
+              d.setHours(0, 0, 0, 0);
+              lastCompleteDate = d;
+            }
+          }
+
+          const base = lastCompleteDate || inicio;
+          const nextDue = new Date(base);
+          nextDue.setDate(nextDue.getDate() + days);
           return nextDue;
         },
 
