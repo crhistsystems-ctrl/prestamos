@@ -626,11 +626,11 @@
             fechaVencimiento.setDate(fechaVencimiento.getDate() + i * days);
             const isLast = i === prest.num_pagos;
 
-            // Con interés: cuotas intermedias = interés, última = interés + saldo capital
-            // Sin interés: todas las cuotas = capital/num_pagos (última usa saldo real)
+            // Con interés: cuotas intermedias = interés, última = interés + saldo capital actual
+            // Sin interés: todas las cuotas muestran capital/num_pagos (monto planeado)
             const cuotaMonto = hasInterest
               ? (isLast ? interes + saldoCapital : interes)
-              : (isLast ? saldoCapital : cuotaCapital);
+              : cuotaCapital;
 
             const threshold = i * (hasInterest ? interes : cuotaCapital);
 
