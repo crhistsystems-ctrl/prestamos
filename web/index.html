@@ -374,7 +374,7 @@
 
           <!-- Formulario de pago (único, con auto-asignación) -->
           <div x-show="showAbono && selectedPrestamo">
-            <button class="back-btn" @click="showAbono = false; selectedPrestamo = null; newPayment.monto = ''">← Atrás</button>
+            <button class="back-btn" @click="showAbono = false; selectedPrestamo = null; newPayment.monto = 0; newPayment.montoDisplay = ''">← Atrás</button>
 
             <h2 style="margin-bottom:0.25rem;color:#0D2B4F;">Registrar Pago</h2>
             <p style="margin-bottom:1.25rem;color:#6B7280;font-size:0.95rem;">
@@ -403,10 +403,11 @@
             <form @submit.prevent="submitPayment()">
               <div class="form-group">
                 <label>Monto del pago</label>
-                <input type="number" x-model.number="newPayment.monto"
-                  placeholder="Ingresa el monto" min="1"
-                  @input="updateAllocation()"
-                  required>
+                <input type="text" inputmode="numeric"
+                  :value="newPayment.montoDisplay"
+                  @input="onMontoInput($event)"
+                  placeholder="Ej: 70.000"
+                  autocomplete="off" required>
               </div>
 
               <!-- Preview de asignación automática (solo cuando hay split interés+capital) -->
@@ -479,7 +480,7 @@
           frecuencia: 'semanal',
           num_pagos: ''
         },
-        newPayment: { monto: '', fecha: '' },
+        newPayment: { monto: 0, montoDisplay: '', fecha: '' },
 
         appsScriptUrl: 'https://script.google.com/macros/s/AKfycbyQLwDJQI5coAzctEZOABzahiVmhWQA1IVJfZnpq8lC5xruI-nxHAUvtuEAc7fUOTRS/exec',
 
@@ -771,13 +772,21 @@
         openAbono(prest) {
           this.selectedPrestamo = prest;
           this.showAbono = true;
-          // Pre-llenar con la cuota si el préstamo tiene plan de cuotas
-          const cuota = prest.installmentInfo?.cuota_monto;
-          this.newPayment.monto = cuota || '';
+          this.newPayment.monto = 0;
+          this.newPayment.montoDisplay = '';
           this.newPayment.fecha = this.getTodayDate();
           this.allocation = null;
           this.paymentMessage = null;
-          if (cuota) this.updateAllocation();
+        },
+
+        onMontoInput(e) {
+          const raw = e.target.value.replace(/\./g, '').replace(/[^\d]/g, '');
+          const num = raw ? parseInt(raw, 10) : 0;
+          this.newPayment.monto = num;
+          const formatted = num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+          this.newPayment.montoDisplay = formatted;
+          e.target.value = formatted;
+          this.updateAllocation();
         },
 
         async loadLoans() {
