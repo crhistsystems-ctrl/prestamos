@@ -237,9 +237,15 @@
                 <div class="gt-value" x-text="formatCurrency(grandTotal)"></div>
                 <div class="gt-sub" x-text="loans.length + (loans.length === 1 ? ' deudor activo' : ' deudores activos')"></div>
               </div>
-              <div x-show="loans.length === 0" class="empty-state"><p>No hay deudores activos.</p></div>
 
-              <template x-for="(deudor, index) in loans" :key="deudor.deudor_id">
+              <div x-show="loans.length > 0" style="margin-bottom:1rem;">
+                <input type="search" x-model="searchQuery" placeholder="Buscar deudor..." style="background:#F3F4F6;">
+              </div>
+
+              <div x-show="loans.length === 0" class="empty-state"><p>No hay deudores activos.</p></div>
+              <div x-show="loans.length > 0 && filteredLoans.length === 0" class="empty-state"><p>Sin resultados para "<span x-text="searchQuery"></span>".</p></div>
+
+              <template x-for="(deudor, index) in filteredLoans" :key="deudor.deudor_id">
                 <div class="loan-card" @click="selectedLoan = deudor"
                   :style="deudor.paymentStatus?.urgent ? 'border-left:3px solid #8B1E1E;' : ''">
                   <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
@@ -459,6 +465,12 @@
         screen: 'new',
         loans: [],
         grandTotal: 0,
+        searchQuery: '',
+        get filteredLoans() {
+          if (!this.searchQuery.trim()) return this.loans;
+          const q = this.searchQuery.trim().toLowerCase();
+          return this.loans.filter(d => d.nombre.toLowerCase().includes(q));
+        },
         loansError: false,
         loansLoaded: false,
         selectedLoan: null,
