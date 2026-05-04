@@ -486,7 +486,10 @@
 
         async init() {
           this.token = localStorage.getItem('prestamos_token');
-          if (this.token) this.authenticated = true;
+          if (this.token) {
+            this.authenticated = true;
+            fetch(`${this.appsScriptUrl}?action=ping`).catch(() => {});
+          }
           this.form.fecha_prestamo = this.getTodayDate();
           this.newPayment.fecha = this.getTodayDate();
           window.addEventListener('online', () => { this.online = true; });
@@ -783,6 +786,7 @@
           this.newPayment.monto = 0;
           this.newPayment.montoDisplay = '';
           this.newPayment.fecha = this.getTodayDate();
+          this.newPayment.idempotencyKey = crypto.randomUUID();
           this.allocation = null;
           this.paymentMessage = null;
         },
@@ -910,7 +914,8 @@
                 token: this.token,
                 prestamo_id: this.selectedPrestamo.prestamo_id,
                 monto,
-                fecha: this.newPayment.fecha
+                fecha: this.newPayment.fecha,
+                idempotency_key: this.newPayment.idempotencyKey
               })
             });
             const data = await res.json();
@@ -920,7 +925,7 @@
               `${a.tipo === 'interes' ? 'Interés' : 'Capital'}: ${this.formatCurrency(a.monto)}`
             ).join(' · ');
             this.paymentMessage = { type: 'success', text: `✓ Pago registrado${parts ? ' — ' + parts : ''}` };
-            this.newPayment = { monto: '', fecha: this.getTodayDate() };
+            this.newPayment = { monto: '', fecha: this.getTodayDate(), idempotencyKey: crypto.randomUUID() };
             this.allocation = null;
             setTimeout(() => {
               this.paymentLoading = false;
