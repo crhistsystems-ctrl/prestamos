@@ -5,7 +5,7 @@ PWA para que un prestamista colombiano registre y gestione préstamos diarios.
 ## Stack
 
 - **Frontend:** HTML + Tailwind CSS + Alpine.js (PWA)
-- **Backend:** n8n webhooks + Google Sheets
+- **Backend:** Google Apps Script (Web App) + Google Sheets
 - **Hosting:** Vercel
 - **Dominio:** prestamos.crhist.dev (subdominio de crhist.dev)
 
@@ -39,13 +39,14 @@ web/
    - Apunta `prestamos.crhist.dev` a Vercel (CNAME)
    - O usa el subdominio que Vercel te asigne
 
-## Workflows n8n Activos
+## Endpoints (Google Apps Script)
 
-- `POST /prestamos/abono` — Registra abono
-- `GET /prestamos/activos` — Lista préstamos activos
-- `GET /prestamos/:id` — Detalle de préstamo + abonos
+Un solo `/exec` con acciones vía `action=` param (ver CLAUDE.md para detalle completo):
 
-*El webhook POST /prestamos/nuevo está duplicado — limpiar en n8n UI.*
+- `GET  action=login` — Login, devuelve token
+- `GET  action=deudores_activos` — Lista deudores + préstamos + abonos
+- `POST action=crear_prestamo` — Crea/reutiliza deudor + crea préstamo
+- `POST action=registrar_abono` — Inserta abono, marca "pagado" si saldo=0
 
 ## Datos en Google Sheets
 

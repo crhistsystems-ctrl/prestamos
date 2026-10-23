@@ -89,7 +89,7 @@ Google Sheets (en cuenta del desarrollador, NO del cliente)
 | Base de datos | Google Sheets | Simple para 15-50 deudores; fácil de respaldar; si escala, se migra a Supabase |
 | Dominio | `prestamos.crhist.dev` (subdominio del desarrollador) | Control total, sin pagos adicionales |
 
-**Nota histórica**: el plan original era n8n + Google Sheets (ver sección "Workflows n8n descontinuados" más abajo). Durante la construcción se pivotó a Apps Script por: menos latencia, menos piezas que pueden fallar, no depende del VPS n8n, y Apps Script puede leer/escribir el Spreadsheet directamente con `SpreadsheetApp.openById(...)`.
+**Nota histórica**: el plan original era n8n + Google Sheets. Se pivotó a Apps Script por: menos latencia, menos piezas que pueden fallar, no depende de ningún VPS propio, y Apps Script puede leer/escribir el Spreadsheet directamente con `SpreadsheetApp.openById(...)`. n8n fue descontinuado por completo para este proyecto (2026-10-23): no se usa, no hay planes de retomarlo.
 
 ### Colores (diseño formal, elegido para sector financiero)
 
@@ -151,7 +151,6 @@ Tipografía: Inter (via Google Fonts) — limpia y profesional.
 
 ```
 c:\Cursor\Prestamos\
-├── .mcp.json              # Conexión MCP a n8n (existente, pero n8n ya no se usa)
 ├── CLAUDE.md              # Este archivo
 ├── web/                   # PWA desplegada en Vercel
 │   ├── index.html         # Todo el código (HTML + CSS + Alpine.js inline)
@@ -196,10 +195,6 @@ Google Apps Script NO responde OPTIONS (preflight). Para evitar preflight:
 - POST sin headers custom → fetch default es `text/plain`, simple request, funciona
 - **NO** agregar `Content-Type: application/json` en fetch — triggeraría preflight y fallaría con CORS error
 
-### Workflows n8n descontinuados
-
-Existen 4 workflows en n8n etiquetados `[Préstamos]` (Crear préstamo, Registrar abono, Listar activos, Detalle). **Están despublicados y no se usan**. Se conservan como referencia histórica por si se decide volver a n8n en el futuro.
-
 ---
 
 ## Convenciones del proyecto
@@ -217,7 +212,6 @@ Existen 4 workflows en n8n etiquetados `[Préstamos]` (Crear préstamo, Registra
 ## Memoria y referencias
 
 - **Credenciales OAuth, API keys**: están en la memoria auto-cargada del usuario en `C:\Users\usuario\.claude\projects\` (compartida entre proyectos). Revisa MEMORY.md si necesitas credenciales.
-- **Skills n8n**: si vas a trabajar con n8n profundamente, los 7 skills (`/n8n-mcp-tools-expert`, `/n8n-workflow-patterns`, etc.) viven en `c:\Cursor\n8n CC\.claude\commands\`. Puedes referenciarlos o copiarlos a este proyecto si hacen falta.
 
 ---
 
